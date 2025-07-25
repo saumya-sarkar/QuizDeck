@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python/
+venv/
+env/
+.env
+.flaskenv
+instance/
+.pytest_cache/
+
+# Node.js
+node_modules/
+dist/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.parcel-cache/
+.vscode/ # Optional: VS Code settings
