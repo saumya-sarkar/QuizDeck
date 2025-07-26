@@ -154,7 +154,7 @@ export default {
         });
 
         console.log('Questions fetched from API:', response.data.questions);
-        this.questions = response.data.questions || [];
+        this.questions = response.data.questions;
         this.quizName = response.data.name;
         this.chapterName = response.data.chapter_name;
         this.subjectName = response.data.subject_name;

@@ -26,6 +26,7 @@
             <UserQuizCard 
               :quiz="quiz"
               @start-quiz="handleStartQuiz" 
+              @auto-refresh="handleAutoRefresh"
             />
           </div>
         </div>
@@ -62,6 +63,7 @@ export default {
   },
   data() {
     return {
+      chapter_id: null,
       chapterName: '',
       subjectName: '', 
       quizzes: [],
@@ -95,8 +97,14 @@ export default {
         }
       ];
     },
-    
-    
+
+    handleAutoRefresh() {
+      console.log('Auto-refresh triggered');
+      setTimeout(() => {
+        this.fetchQuizzes();
+      }, 3000);
+    },
+      
     handleStartQuiz(quiz) {
       const toast = useToast();
       const userId = this.$route.params.userId;
@@ -135,9 +143,10 @@ export default {
         });
         
         console.log('Quizzes fetched from API:', response.data.quizzes);
-        this.quizzes = response.data.quizzes || [];
-        this.chapterName = response.data.name || 'Chapter';
-        this.subjectName = response.data.subject_name || 'Subject';
+        this.quizzes = response.data.quizzes;
+        this.chapterName = response.data.name;
+        this.subjectName = response.data.subject_name;
+        this.chapter_id = response.data.id;
       } catch (error) {
         console.error('Error fetching quizzes:', error);
       }

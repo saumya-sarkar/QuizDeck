@@ -50,9 +50,15 @@ class GetAllChapters(Resource):
             return {"code": 404, "error_message": "Chapter not found"}, 404
         
         all_quizzes = chapter.quizzes.filter_by(deleted=False).all()
+        
         if not all_quizzes:
-            return {"code": 200, "error_message": "No quizzes found for this chapter"}, 200
-
+            return {
+            "id": chapter.id,
+            "name": chapter.name,
+            "subject_name": chapter.subject.name,
+            "quizzes": []
+        }, 200
+        
         for quiz in all_quizzes:
             quiz.check_locked()
         

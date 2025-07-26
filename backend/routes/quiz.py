@@ -92,8 +92,15 @@ class GetAllQuizzes(Resource):
             return {"code": 404, "error_message": "Quiz not found"}, 404
 
         all_questions = quiz.questions.filter_by(deleted=False).all()
+        
         if not all_questions:
-            return {"code": 200, "error_message": "No questions found for this quiz"}, 200
+            return {
+            "id": quiz.id,
+            "name": quiz.name,
+            "chapter_name": quiz.chapter.name,
+            "subject_name": quiz.chapter.subject.name,
+            "questions": []
+        }, 200
 
         questions = [
             {

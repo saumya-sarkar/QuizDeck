@@ -1,4 +1,4 @@
-from models import db, user_datastore, Subject
+from models import db, user_datastore, Question
 # from app import app
 # from flask import current_app as app
 from app import create_app
@@ -35,11 +35,12 @@ with app.app_context():
     create_roles() # Create roles
     create_admin() # Create admin
 
-    # tests = Subject.query.filter(Subject.name.like('%Test%')).all()
-    # for test in tests:
-    #     db.session.delete(test)
-    #     db.session.commit()  # Commit changes to the database
-    #     print(f"Deleted test subject: {test.name}")
+    # tests = Question.query.filter(Question.question_statement.like('%Test%')).all()
+    tests = Question.query.filter(Question.id.in_(range(7,8))).all()
+    for test in tests:
+        db.session.delete(test)
+        db.session.commit()  # Commit changes to the database
+        print(f"Deleted test: {test.id}")
 
     # Example of dropping a table (uncomment if needed)
     

@@ -79,7 +79,7 @@ class Subject(db.Model):
     deleted = db.Column(db.Boolean, default=False)
     
     #relationships
-    chapters = db.relationship('Chapter', back_populates='subject', lazy='dynamic')
+    chapters = db.relationship('Chapter', back_populates='subject', lazy='dynamic', cascade='all, delete-orphan')
     
 
 class Chapter(db.Model):
@@ -97,7 +97,7 @@ class Chapter(db.Model):
     #relationships
     subject_id = db.Column(db.Integer, db.ForeignKey('subject.id'), nullable=False)
     subject = db.relationship('Subject', back_populates='chapters')
-    quizzes = db.relationship('Quiz', back_populates='chapter', lazy='dynamic')
+    quizzes = db.relationship('Quiz', back_populates='chapter', lazy='dynamic', cascade='all, delete-orphan')
 
 
 
@@ -134,7 +134,7 @@ class Quiz(db.Model):
     chapter_id = db.Column(db.Integer, db.ForeignKey('chapter.id'))
     chapter = db.relationship('Chapter', back_populates='quizzes')
     quiz_attempts = db.relationship('QuizAttempt', back_populates='quiz', lazy='dynamic')
-    questions = db.relationship('Question', back_populates='quiz', lazy='dynamic')
+    questions = db.relationship('Question', back_populates='quiz', lazy='dynamic', cascade='all, delete-orphan')
 
 
     def check_locked(self):
@@ -220,7 +220,7 @@ class Question(db.Model):
     #relationships
     quiz_id = db.Column(db.Integer, db.ForeignKey('quiz.id'))
     quiz = db.relationship('Quiz', back_populates='questions')
-    options = db.relationship('Option', back_populates='question', lazy='dynamic')
+    options = db.relationship('Option', back_populates='question', lazy='dynamic', cascade='all, delete-orphan')
 
 class Option(db.Model):
     __tablename__ = 'option'

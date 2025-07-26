@@ -101,6 +101,7 @@ export default {
   },
   data() {
     return {
+      chapter_id: null,
       chapterName: '',
       subjectName: '', 
       quizzes: [],
@@ -137,7 +138,7 @@ export default {
     showQuizCreateModal() {
       this.$refs.quizCreate.show({
         chapter_name: this.chapterName,
-        chapter_id: this.$route.params.chapterId
+        chapter_id: this.chapter_id
       });
     },
 
@@ -205,9 +206,10 @@ export default {
         });
         
         console.log('Quizzes fetched from API:', response.data.quizzes);
-        this.quizzes = response.data.quizzes || [];
-        this.chapterName = response.data.name || 'Chapter';
-        this.subjectName = response.data.subject_name || 'Subject';
+        this.quizzes = response.data.quizzes;
+        this.chapterName = response.data.name;
+        this.subjectName = response.data.subject_name;
+        this.chapter_id = response.data.id;
       } catch (error) {
         console.error('Error fetching quizzes:', error);
       }

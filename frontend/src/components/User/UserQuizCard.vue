@@ -157,7 +157,9 @@ export default {
   data() {
     return {
       countdownDisplay: '',
-      countdownInterval: null
+      countdownInterval: null,
+      time_till_target: null,
+      refresh_flag: false
     };
   },
   mounted() {
@@ -324,12 +326,13 @@ export default {
       }
 
       const timeDiff = targetTime - now;
+      this.time_till_target = timeDiff;
 
       if (timeDiff <= 0) {
         this.countdownDisplay = '00 00:00:00';
         this.clearCountdownTimer();
         // Force component re-render to update status
-        this.$forceUpdate();
+        // this.$forceUpdate();
         return;
       }
 
@@ -359,6 +362,9 @@ export default {
       const days = Math.floor(diff / (1000 * 60 * 60 * 24));
       
       return `${days} Days`;
+    },
+    autoRefresh() {
+      this.$emit('auto-refresh');
     }
   },
 
@@ -369,7 +375,14 @@ export default {
         this.startCountdownTimer();
       },
       deep: true
-    }
+    },
+    time_till_target(newValue) {
+      if (newValue <= 3000 && !this.refresh_flag) {
+        console.log('Countdown ended, refreshing quizzes');
+        this.refresh_flag = true;
+        this.autoRefresh();
+      }
+    } 
   }
 };
 </script>
