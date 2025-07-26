@@ -23,6 +23,7 @@ submit_quiz_parser.add_argument('is_auto_submit', type=bool, default=False, loca
 
 get_result_parser = reqparse.RequestParser()
 get_result_parser.add_argument('attempt_id', type=int, required=True, location='json')
+get_result_parser.add_argument('attempt_id', type=int, required=True, location='json')
 
 
 class StartQuiz(Resource):
@@ -275,10 +276,11 @@ class GetQuizResult(Resource):
     def post(self):
         args = get_result_parser.parse_args()
         attempt_id = args.get('attempt_id')
+        user_id = args.get('user_id', current_user.id)
         
         attempt = QuizAttempt.query.filter_by(
             id=attempt_id,
-            user_id=current_user.id
+            user_id=user_id
         ).first()
         
         if not attempt:

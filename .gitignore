@@ -9,8 +9,8 @@ env/
 .env
 .venv/
 .flaskenv
-instance/
 .pytest_cache/
+Test/
 
 # Node.js
 node_modules/

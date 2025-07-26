@@ -63,14 +63,15 @@ api.add_resource(SaveAnswer, '/quiz/save-answer')  # localhost:5000/api/quiz/sav
 api.add_resource(SubmitQuiz, '/quiz/submit')  # localhost:5000/api/quiz/submit
 api.add_resource(GetQuizResult, '/quiz/result')  # localhost:5000/api/quiz/result
 
+# User Quiz Attempts API
+from routes.user_attempts import UserQuizAttempts
+api.add_resource(UserQuizAttempts, '/user/quiz-attempts')  # localhost:5000/api/user/quiz-attempts
 
-
-@app.route('/test')
-@auth_required('token')
-@roles_accepted('admin')
-def test():
-    return {"message": "Test endpoint reached successfully"}, 200
-
+# Admin Users Management Routes
+from routes.admin_users import GetAllUsers, GetUserDetails, ToggleUserStatus
+api.add_resource(GetAllUsers, '/admin/users')  # localhost:5000/api/admin/users
+api.add_resource(GetUserDetails, '/admin/users/details')  # localhost:5000/api/admin/users/details
+api.add_resource(ToggleUserStatus, '/admin/users/toggle-status')  # localhost:5000/api/admin/users/toggle-status
 
 if __name__ == '__main__':
-    app.run()
+    app.run(port=5000)  # 5000 is the default port for Flask

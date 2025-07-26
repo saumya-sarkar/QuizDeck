@@ -51,8 +51,8 @@ class GetAllChapters(Resource):
         
         all_quizzes = chapter.quizzes.filter_by(deleted=False).all()
         if not all_quizzes:
-            return {"code": 404, "error_message": "No quizzes found for this chapter"}, 404
-        
+            return {"code": 200, "error_message": "No quizzes found for this chapter"}, 200
+
         for quiz in all_quizzes:
             quiz.check_locked()
         
@@ -71,7 +71,9 @@ class GetAllChapters(Resource):
                 "created_at": ist_format(quiz.created_at),
                 "updated_at": ist_format(quiz.updated_at) if quiz.updated_at else None,
                 "quiz_status": quiz.check_status(),
-                "available_for": quiz.check_available_for()
+                "available_for": quiz.check_available_for(),
+                "total_questions": quiz.get_total_questions(),
+                "total_marks": quiz.get_total_marks()
             }
             for quiz in all_quizzes
         ]

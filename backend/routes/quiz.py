@@ -93,7 +93,7 @@ class GetAllQuizzes(Resource):
 
         all_questions = quiz.questions.filter_by(deleted=False).all()
         if not all_questions:
-            return {"code": 404, "error_message": "No questions found for this quiz"}, 404
+            return {"code": 200, "error_message": "No questions found for this quiz"}, 200
 
         questions = [
             {
@@ -223,7 +223,9 @@ class UpdateQuiz(Resource):
                 "created_at": ist_format(quiz.created_at),
                 "updated_at": ist_format(quiz.updated_at) if quiz.updated_at else None,
                 "quiz_status": quiz.check_status(),
-                "available_for": quiz.check_available_for()
+                "available_for": quiz.check_available_for(),
+                "total_questions": quiz.get_total_questions(),
+                "total_marks": quiz.get_total_marks()
             }, 201
 
     
@@ -329,7 +331,9 @@ class UpdateQuiz(Resource):
                 "created_at": ist_format(quiz.created_at),
                 "updated_at": ist_format(quiz.updated_at) if quiz.updated_at else None,
                 "quiz_status": quiz.check_status(),
-                "available_for": quiz.check_available_for()
+                "available_for": quiz.check_available_for(),
+                "total_questions": quiz.get_total_questions(),
+                "total_marks": quiz.get_total_marks()
             }, 200
 
 
