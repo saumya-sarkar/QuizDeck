@@ -1,8 +1,12 @@
 from flask import Flask
-from flask_security import Security, auth_required, roles_accepted
+from flask_security import Security
 from models import db, user_datastore
 from flask_restful import Api
 from flask_cors import CORS
+from celery import Celery
+import redis
+import os
+from celery_init import celery_init_app
 
 
 def create_app():
@@ -24,6 +28,9 @@ def create_app():
 
 
 app, api = create_app()
+celery = celery_init_app(app)
+celery.autodiscover_tasks()
+
 
 from routes.user import UserRegister, UserLogin, qualificationList, checkUsername, checkEmail, userDetails
 api.add_resource(UserRegister, '/register')  # localhost:5000/api/register
@@ -72,6 +79,16 @@ from routes.admin_users import GetAllUsers, GetUserDetails, ToggleUserStatus
 api.add_resource(GetAllUsers, '/admin/users')  # localhost:5000/api/admin/users
 api.add_resource(GetUserDetails, '/admin/users/details')  # localhost:5000/api/admin/users/details
 api.add_resource(ToggleUserStatus, '/admin/users/toggle-status')  # localhost:5000/api/admin/users/toggle-status
+
+
+
+from routes.csv_export import UserAttemptsCSVExport, CSVExportStatus, CSVExportDownload
+
+# Add to your existing API routes:
+api.add_resource(UserAttemptsCSVExport, '/csv-export/generate')
+api.add_resource(CSVExportStatus, '/csv-export/status')
+api.add_resource(CSVExportDownload, '/csv-export/download/<string:task_id>')  # localhost:5000/api/csv-export/download/<task_id>
+
 
 if __name__ == '__main__':
     app.run(port=5000)  # 5000 is the default port for Flask

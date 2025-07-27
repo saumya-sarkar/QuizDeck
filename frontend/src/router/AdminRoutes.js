@@ -4,16 +4,8 @@ import Chapters from "@/views/Admin/Chapters.vue";
 import Quizzes from "@/views/Admin/Quizzes.vue";
 import Questions from "@/views/Admin/Questions.vue";
 import AdminUsers from "@/views/Admin/AdminUsers.vue";
-// const Users = () =>
-//   import(/* webpackPrefetch: true */ "@/views/Admin/Users.vue");
-// const Quiz = () => import(/* webpackPrefetch: true */ "@/views/Admin/Quiz.vue");
-// const StudentDetails = () => import("@/views/Admin/StudentDetails.vue");
-// const Summary = () =>
-//   import(/* webpackPrefetch: true */ "@/views/Admin/Summary.vue");
-// const Transactions = () =>
-//   import(/* webpackPrefetch: true */ "../views/Admin/Transactions.vue");
-// const UserQuizDetails = () =>
-//   import(/* webpackPrefetch: true */ "../views/Admin/UserQuizDetails.vue");
+import CSVExportManager from "@/views/Admin/CSVExportManager.vue";
+
 
 const AdminRoutes = [
   {
@@ -76,6 +68,16 @@ const AdminRoutes = [
       title: "User Management"
     },
   },
+  {
+    path: "/admin/csv-export",
+    name: "CSVExportManager", 
+    component: CSVExportManager,
+    meta: {
+      requiresAuth: true,
+      requiresAdmin: true,
+      title: "CSV Export"
+    },
+  }
 //   {
 //     path: "/admin/users",
 //     name: "Users",
