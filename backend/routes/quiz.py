@@ -219,10 +219,10 @@ class UpdateQuiz(Resource):
 
         # print(quiz.id)
         # print(quiz.start_time)
-        if quiz.start_time:
-            start_time = quiz.start_time.astimezone(ZoneInfo("Asia/Kolkata"))
-            unlock_quiz_task.apply_async((quiz.id,), eta=start_time)
-            print(f"Unlock task scheduled for quiz {quiz.name} with ID {quiz.id} at {start_time}")
+        # if quiz.start_time:
+        #     start_time = quiz.start_time.astimezone(ZoneInfo("Asia/Kolkata"))
+        #     unlock_quiz_task.apply_async((quiz.id,), eta=start_time)
+        #     print(f"Unlock task scheduled for quiz {quiz.name} with ID {quiz.id} at {start_time}")
 
         return {
                 "id": quiz.id,
@@ -333,10 +333,10 @@ class UpdateQuiz(Resource):
 
         db.session.commit()
 
-        if quiz.start_time:
-            start_time = quiz.start_time.astimezone(ZoneInfo("Asia/Kolkata"))
-            unlock_quiz_task.apply_async((quiz.id,), eta=start_time)
-            print(f"Unlock task scheduled for quiz {quiz.name} with ID {quiz.id} at {start_time}")
+        # if quiz.start_time:
+        #     start_time = quiz.start_time.astimezone(ZoneInfo("Asia/Kolkata"))
+        #     unlock_quiz_task.apply_async((quiz.id,), eta=start_time)
+        #     print(f"Unlock task scheduled for quiz {quiz.name} with ID {quiz.id} at {start_time}")
         
         return {
                 "id": quiz.id,

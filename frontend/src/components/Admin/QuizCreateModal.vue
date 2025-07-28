@@ -23,7 +23,7 @@
             </div>
 
             <!-- Duration -->
-            <div class="mb-3">
+            <!-- <div class="mb-3">
               <label for="duration_mins" class="form-label">Duration (minutes)</label>
               <input
                 type="number"
@@ -31,6 +31,19 @@
                 v-model="duration_mins"
                 class="form-control no-spinners"
                 placeholder="Enter duration in minutes"
+              />
+            </div> -->
+            <div class="mb-3">
+              <label for="time_duration" class="form-label">Time Duration (HH:MM)</label>
+              <input
+                type="text"
+                id="time_duration"
+                v-model="time_duration"
+                @blur="validateTimeInput"
+                placeholder="HH:MM"
+                pattern="^([01]\d|2[0-3]):([0-5]\d)$"
+                title="Please enter duration in HH:MM format (01:30)"
+                class="form-control"
               />
             </div>
 
@@ -152,8 +165,10 @@ export default {
   data() {
     return {
         name: '',
-        duration_mins: 60, // Default to 60 minutes
-        difficulty: 'Easy', // Default to Easy
+        duration_mins: 60, // default to 60 minutes
+        time_duration: '01:00', // default to 60 minutes
+        isValidTimeInput: true,
+        difficulty: 'Easy', // default to Easy
         quiz_type: '',
         start_date: '',
         start_time: '',
@@ -200,6 +215,14 @@ export default {
       }
     }
   },
+  computed: {
+    calculatedDuration() {
+      if (this.time_duration && this.isValidTimeInput) {
+        const [hours, minutes] = this.time_duration.split(':').map(Number);
+        this.duration_mins = hours * 60 + minutes; // Convert to total minutes
+      }
+    }
+  },
   methods: {
     show(data) {
       this.resetForm();
@@ -210,6 +233,19 @@ export default {
     
     hide() {
       this.modalInstance.hide();
+    },
+    validateTimeInput() {
+      const regex = /^([01]\d|2[0-3]):([0-5]\d)$/; // HH:MM regex (00:00 to 23:59)
+      if (!regex.test(this.time_duration)) {
+        this.error = 'Invalid time format. Please use HH:MM (01:30).';
+        this.isValidTimeInput = false;
+      } else {
+        this.error = '';
+        this.isValidTimeInput = true;
+        // const [hours, minutes] = this.time_duration.split(':').map(Number);
+        // this.duration_mins = hours * 60 + minutes; // Convert to total minutes
+        
+      }
     },
 
     formatDateTimeForSubmission() {
@@ -241,6 +277,24 @@ export default {
 
       if (!this.quiz_type) {
         this.error = 'Quiz type is required';
+        this.isSubmitting = false;
+        return;
+      }
+
+      if(this.isValidTimeInput === false || !this.time_duration) {
+        this.error = 'Please enter a valid time duration in HH:MM format (01:30)';
+        this.isSubmitting = false;
+        return;
+      }
+
+      if (this.time_duration && this.duration_mins <= 0) {
+        this.error = 'Duration must be greater than 0 minutes';
+        this.isSubmitting = false;
+        return;
+      }
+
+      if (this.time_duration && isNaN(this.duration_mins)) {
+        this.error = 'Time Duration must be a valid number in HH:MM format (01:30)';
         this.isSubmitting = false;
         return;
       }
@@ -297,6 +351,8 @@ export default {
     resetForm() {
         this.name = '';
         this.duration_mins = 60; // Reset to default 60 minutes
+        this.time_duration = '01:00'; // Reset to default 60 minutes
+        this.isValidTimeInput = true;
         this.difficulty = 'Easy'; // Reset to Easy as default
         this.quiz_type = '';
         this.start_date = '';
@@ -434,7 +490,7 @@ export default {
 }
 
 /* Remove number input spinners */
-#quizCreateModal .no-spinners::-webkit-outer-spin-button,
+/* #quizCreateModal .no-spinners::-webkit-outer-spin-button,
 #quizCreateModal .no-spinners::-webkit-inner-spin-button {
   -webkit-appearance: none;
   margin: 0;
@@ -443,5 +499,5 @@ export default {
 #quizCreateModal .no-spinners[type=number] {
   appearance: textfield;
   -moz-appearance: textfield;
-}
+} */
 </style>

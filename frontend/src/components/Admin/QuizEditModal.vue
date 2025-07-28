@@ -28,7 +28,7 @@
             </div>
 
             <!-- Duration -->
-            <div class="mb-3">
+            <!-- <div class="mb-3">
               <label for="duration_mins" class="form-label">Duration (minutes)</label>
               <input
                 type="number"
@@ -36,6 +36,19 @@
                 v-model="duration_mins"
                 class="form-control no-spinners"
                 placeholder="Enter duration in minutes"
+              />
+            </div> -->
+            <div class="mb-3">
+              <label for="time_duration" class="form-label">Time Duration (HH:MM)</label>
+              <input
+                type="text"
+                id="time_duration"
+                v-model="time_duration"
+                @blur="validateTimeInput"
+                placeholder="HH:MM"
+                pattern="^([01]\d|2[0-3]):([0-5]\d)$"
+                title="Please enter duration in HH:MM format (01:30)"
+                class="form-control"
               />
             </div>
 
@@ -160,7 +173,9 @@ export default {
     return {
         id: null,
         name: '',
-        duration_mins: null, 
+        duration_mins: null,
+        time_duration: '',
+        isValidTimeInput: false, // Track if time input is valid
         difficulty: '',
         quiz_type: '',
         start_date: '',
@@ -209,12 +224,30 @@ export default {
       }
     }
   },
+  computed: {
+    calculatedDuration() {
+      if (this.time_duration && this.isValidTimeInput) {
+        const [hours, minutes] = this.time_duration.split(':').map(Number);
+        this.duration_mins = hours * 60 + minutes; // Convert to total minutes
+      }
+    }
+  },
   methods: {
+
     show(quizToEdit) {
       if (quizToEdit) {
         this.id = quizToEdit.id;
         this.name = quizToEdit.name;
         this.duration_mins = quizToEdit.duration_mins;
+        if (quizToEdit.duration_mins) {
+          // Format duration to HH:MM
+          let hours = Math.floor(quizToEdit.duration_mins / 60);
+          let minutes = quizToEdit.duration_mins % 60;
+          this.time_duration = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+        } else {
+          this.time_duration = '';
+        }
+        this.isValidTimeInput = true; // Reset to true for valid input
         this.difficulty = quizToEdit.difficulty;
         this.quiz_type = quizToEdit.quiz_type;
         if (quizToEdit.start_time) {
@@ -242,6 +275,20 @@ export default {
     
     hide() {
       this.modalInstance.hide();
+    },
+
+    validateTimeInput() {
+      const regex = /^([01]\d|2[0-3]):([0-5]\d)$/; // HH:MM regex (00:00 to 23:59)
+      if (!regex.test(this.time_duration)) {
+        this.error = 'Invalid time format. Please use HH:MM (01:30).';
+        this.isValidTimeInput = false;
+      } else {
+        this.error = '';
+        this.isValidTimeInput = true;
+        // const [hours, minutes] = this.time_duration.split(':').map(Number);
+        // this.duration_mins = hours * 60 + minutes; // Convert to total minutes
+        
+      }
     },
 
     formatDateTimeForSubmission() {
@@ -277,6 +324,24 @@ export default {
 
       if (!this.quiz_type) {
         this.error = 'Quiz type is required';
+        this.isSubmitting = false;
+        return;
+      }
+
+      if(this.isValidTimeInput === false || !this.time_duration) {
+        this.error = 'Please enter a valid time duration in HH:MM format (01:30)';
+        this.isSubmitting = false;
+        return;
+      }
+
+      if (this.time_duration && this.duration_mins <= 0) {
+        this.error = 'Duration must be greater than 0 minutes';
+        this.isSubmitting = false;
+        return;
+      }
+
+      if (this.time_duration && isNaN(this.duration_mins)) {
+        this.error = 'Time Duration must be a valid number in HH:MM format (01:30)';
         this.isSubmitting = false;
         return;
       }
@@ -335,6 +400,8 @@ export default {
     resetForm() {
         this.name = '';
         this.duration_mins = null;
+        this.time_duration = '';
+        this.isValidTimeInput = false;
         this.difficulty = '';
         this.quiz_type = '';
         this.start_date = '';
@@ -472,7 +539,7 @@ export default {
 }
 
 /* Remove number input spinners */
-#quizEditModal .no-spinners::-webkit-outer-spin-button,
+/* #quizEditModal .no-spinners::-webkit-outer-spin-button,
 #quizEditModal .no-spinners::-webkit-inner-spin-button {
   -webkit-appearance: none;
   margin: 0;
@@ -481,5 +548,5 @@ export default {
 #quizEditModal .no-spinners[type=number] {
   appearance: textfield;
   -moz-appearance: textfield;
-}
+} */
 </style>
