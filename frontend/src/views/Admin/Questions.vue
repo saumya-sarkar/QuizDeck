@@ -11,9 +11,29 @@
           <div class="d-flex justify-content-between align-items-center">
             <div>
               <h2 class="questions-title mb-0">{{ quizName }} Questions</h2>
-              <p class="text-muted mb-0">{{ questions.length }} questions available</p>
+              <p class="text-muted mb-0">{{ filteredQuestions.length }} of {{ questions.length }} questions available</p>
             </div>
-            <div>
+            <div class="d-flex align-items-center">
+              <!-- Search Bar -->
+              <div class="search-container">
+                <div class="input-group">
+                  <input 
+                    type="text" 
+                    class="form-control search-input" 
+                    placeholder="Search questions..." 
+                    v-model="searchQuery"
+                    @input="filterQuestions"
+                  >
+                  <span v-if="!searchQuery" class="input-group-text search-icon">
+                    <font-awesome-icon icon="search" />
+                  </span>
+                  <span v-if="searchQuery" class="input-group-text clear-icon" @click="clearSearch">
+                    <font-awesome-icon icon="times" />
+                  </span>
+                </div>
+              </div>
+
+              <!-- Add Question Button -->
               <button 
                 class="btn add-question-btn d-flex align-items-center gap-2"
                 @click="showQuestionCreateModal"
@@ -27,9 +47,9 @@
       </div>
 
       <!-- Questions List -->
-      <div class="questions-list">
+      <div class="questions-list" v-if="filteredQuestions.length > 0">
         <div 
-          v-for="question in questions" 
+          v-for="question in filteredQuestions" 
           :key="question.id"
           class="mb-4"
         >
@@ -41,8 +61,26 @@
         </div>
       </div>
 
-      <!-- Empty State -->
-      <div v-if="questions.length === 0" class="row">
+      <!-- Empty State - No Questions Found -->
+      <div v-else-if="questions.length > 0 && filteredQuestions.length === 0" class="row">
+        <div class="col-12 text-center py-5">
+          <font-awesome-icon icon="search" class="fa-3x text-white-50 mb-3" />
+          <h4 class="text-white">No questions found</h4>
+          <p class="text-white-50">
+            No questions match "{{ searchQuery }}". Try adjusting your search.
+          </p>
+          <button 
+            class="btn btn-outline-light mt-3"
+            @click="clearSearch"
+          >
+            <font-awesome-icon icon="times" class="me-2" />
+            Clear Search
+          </button>
+        </div>
+      </div>
+
+      <!-- Empty State - No Questions Available -->
+      <div v-else-if="questions.length === 0" class="row">
         <div class="col-12 text-center py-5">
           <font-awesome-icon icon="question-circle" class="fa-3x text-white-50 mb-3" />
           <h4 class="text-white">No Questions Available</h4>
@@ -94,6 +132,8 @@ export default {
         subjectName: '',
         quiz_id: '',
         questions: [],
+        filteredQuestions: [],
+        searchQuery: '',
         breadcrumbItems: []
     };
   },
@@ -131,6 +171,25 @@ export default {
       ]
     },
 
+    filterQuestions() {
+      let filtered = [...this.questions];
+
+      // Apply search filter
+      if (this.searchQuery.trim()) {
+        const query = this.searchQuery.toLowerCase();
+        filtered = filtered.filter(question => 
+          question.question_statement.toLowerCase().includes(query)
+        );
+      }
+
+      this.filteredQuestions = filtered;
+    },
+
+    clearSearch() {
+      this.searchQuery = '';
+      this.filterQuestions();
+    },
+
     async fetchQuestions() {
       const quizId = this.$route.params.quizId;
 
@@ -159,6 +218,7 @@ export default {
         this.chapterName = response.data.chapter_name;
         this.subjectName = response.data.subject_name;
         this.quiz_id = response.data.id;
+        this.filterQuestions(); // Apply initial filtering
       } catch (error) {
         console.error('Error fetching questions:', error);
       }
@@ -178,6 +238,7 @@ export default {
       // Add to the list
       if (newQuestion) {
         this.questions.push(newQuestion);
+        this.filterQuestions(); // Apply filters to include the new question
       } else {
         // If the response doesn't contain the data, refresh the list
         this.fetchQuestions();
@@ -218,6 +279,7 @@ export default {
       const toast = useToast();
       // Remove from local array for now
       this.questions = this.questions.filter(q => q.id !== question.id);
+      this.filterQuestions(); // Apply filters after deletion
       
       try {
         const token = sessionStorage.getItem('access_token');
@@ -284,6 +346,58 @@ export default {
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
+/* Search Bar Styles */
+.search-container {
+  margin-right: 1rem;
+}
+
+.search-input {
+  background: rgba(255, 255, 255, 0.15) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  color: white !important;
+  backdrop-filter: blur(10px);
+  border-radius: 25px 0 0 25px !important;
+  padding: 0.75rem 1rem !important;
+  width: 300px;
+}
+
+.search-input::placeholder {
+  color: rgba(255, 255, 255, 0.6) !important;
+}
+
+.search-input:focus {
+  background: rgba(255, 255, 255, 0.25) !important;
+  border-color: rgba(255, 255, 255, 0.4) !important;
+  box-shadow: 0 0 0 0.2rem rgba(255, 255, 255, 0.25) !important;
+  color: white !important;
+}
+
+.search-icon {
+  background: rgba(255, 255, 255, 0.2) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  border-left: none !important;
+  color: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
+  border-radius: 0 25px 25px 0 !important;
+}
+
+.clear-icon {
+  background: rgba(255, 255, 255, 0.2) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  border-left: none !important;
+  color: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
+  border-radius: 0 25px 25px 0 !important;
+  cursor: pointer;
+}
+
+.clear-icon:hover {
+  background: rgba(255, 255, 255, 0.25) !important;
+  border-color: rgba(255, 255, 255, 0.3) !important;
+  color: white !important;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1) !important;
+}
+
 .add-question-btn {
   background: rgba(255, 255, 255, 0.15);
   backdrop-filter: blur(10px);
@@ -333,6 +447,16 @@ export default {
   .add-question-btn {
     padding: 0.6rem 1rem;
     min-width: 44px;
+  }
+
+  .search-input {
+    width: 250px;
+  }
+}
+
+@media (max-width: 480px) {
+  .search-input {
+    width: 200px;
   }
 }
 </style>

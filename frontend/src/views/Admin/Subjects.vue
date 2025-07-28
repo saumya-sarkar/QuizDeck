@@ -13,7 +13,27 @@
               <h2 class="dashboard-title">Subject Management</h2>
               <p class="text-muted">Manage all your subjects and their content</p>
             </div>
-            <div>
+            <div class="d-flex align-items-center">
+              <!-- Search Bar -->
+              <div class="search-container">
+                <div class="input-group">
+                  <input 
+                    type="text" 
+                    class="form-control search-input" 
+                    placeholder="Search..." 
+                    v-model="searchQuery"
+                    @input="filterSubjects"
+                  >
+                  <span v-if="!searchQuery" class="input-group-text search-icon">
+                    <font-awesome-icon icon="search" />
+                  </span>
+                  <span v-if="searchQuery" class="input-group-text clear-icon" @click="clearSearch">
+                    <font-awesome-icon icon="times" />
+                  </span>
+                </div>
+              </div>
+
+              <!-- Add Subject Button -->
               <button 
                 class="btn add-subject-btn d-flex align-items-center gap-2"
                 @click="showSubjectCreateModal"
@@ -27,10 +47,10 @@
       </div>
 
       <!-- Subject Cards Grid -->
-      <div class="row g-4">
+      <div class="row g-4" v-if="filteredSubjects.length > 0">
         <div 
           class="col-xl-3" 
-          v-for="subject in subjects" 
+          v-for="subject in filteredSubjects" 
           :key="subject.id"
         >
           <SubjectCard 
@@ -39,6 +59,30 @@
             v-on:sent-edit-subject="showSubjectEditModal"
             v-on:sent-delete-subject="showSubjectDeleteModal"
           />
+        </div>
+      </div>
+
+      <!-- Empty State -->
+      <div v-else class="row">
+        <div class="col-12 text-center py-5">
+          <font-awesome-icon 
+            :icon="searchQuery ? 'search' : 'book'" 
+            class="fa-3x text-white-50 mb-3" 
+          />
+          <h4 class="text-white">
+            {{ searchQuery ? 'No subjects found' : 'No Subjects Available' }}
+          </h4>
+          <p class="text-white-50">
+            {{ searchQuery ? `No subjects match "${searchQuery}". Try adjusting your search.` : 'Subjects will appear here once they are created.' }}
+          </p>
+          <button 
+            v-if="searchQuery" 
+            class="btn btn-outline-light mt-3"
+            @click="clearSearch"
+          >
+            <font-awesome-icon icon="times" class="me-2" />
+            Clear Search
+          </button>
         </div>
       </div>
     </div>
@@ -96,7 +140,9 @@ export default {
   },
   data() {
     return {
-      subjects:  [],
+      subjects: [],
+      filteredSubjects: [],
+      searchQuery: '',
       // Breadcrumb items for navigation
       breadcrumbItems: [
         {
@@ -113,6 +159,25 @@ export default {
   },
 
   methods: {
+    filterSubjects() {
+      let filtered = [...this.subjects];
+
+      // Apply search filter
+      if (this.searchQuery.trim()) {
+        const query = this.searchQuery.toLowerCase();
+        filtered = filtered.filter(subject => 
+          subject.name.toLowerCase().includes(query)
+        );
+      }
+
+      this.filteredSubjects = filtered;
+    },
+
+    clearSearch() {
+      this.searchQuery = '';
+      this.filterSubjects();
+    },
+
     showSubjectCreateModal() {
       this.$refs.subjectCreate.show();
     },
@@ -124,6 +189,7 @@ export default {
       // Add to the list
       if (newSubject) {
         this.subjects.push(newSubject);
+        this.filterSubjects(); // Apply filters to include the new subject
       } else {
         // If the response doesn't contain the data, refresh the list
         this.fetchSubjects();
@@ -151,6 +217,7 @@ export default {
       toast.success(`Subject ${deletedSubject.name} deleted successfully.`, { theme: 'light' });
       // Remove the deleted subject from the list
       this.subjects = this.subjects.filter(subject => subject.id !== deletedSubject.id);
+      this.filterSubjects(); // Apply filters after deletion
     },
 
     handleViewChapters(subject) {
@@ -172,6 +239,7 @@ export default {
           },
         });
         this.subjects = response.data;
+        this.filterSubjects(); // Apply initial filtering
       } catch (error) {
         console.error('Error fetching subjects:', error);
       }
@@ -220,6 +288,58 @@ export default {
   z-index: 1;
 }
 
+/* Search Bar Styles */
+.search-container {
+  margin-right: 1rem;
+}
+
+.search-input {
+  background: rgba(255, 255, 255, 0.15) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  color: white !important;
+  backdrop-filter: blur(10px);
+  border-radius: 25px 0 0 25px !important;
+  padding: 0.75rem 1rem !important;
+  width: 300px;
+}
+
+.search-input::placeholder {
+  color: rgba(255, 255, 255, 0.6) !important;
+}
+
+.search-input:focus {
+  background: rgba(255, 255, 255, 0.25) !important;
+  border-color: rgba(255, 255, 255, 0.4) !important;
+  box-shadow: 0 0 0 0.2rem rgba(255, 255, 255, 0.25) !important;
+  color: white !important;
+}
+
+.search-icon {
+  background: rgba(255, 255, 255, 0.2) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  border-left: none !important;
+  color: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
+  border-radius: 0 25px 25px 0 !important;
+}
+
+.clear-icon {
+  background: rgba(255, 255, 255, 0.2) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  border-left: none !important;
+  color: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
+  border-radius: 0 25px 25px 0 !important;
+  cursor: pointer;
+}
+
+.clear-icon:hover {
+  background: rgba(255, 255, 255, 0.25) !important;
+  border-color: rgba(255, 255, 255, 0.3) !important;
+  color: white !important;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1) !important;
+}
+
 .add-subject-btn {
   background: rgba(255, 255, 255, 0.15);
   backdrop-filter: blur(10px);
@@ -254,6 +374,16 @@ export default {
   .add-subject-btn {
     padding: 0.6rem 1rem;
     min-width: 44px;
+  }
+  
+  .search-input {
+    width: 250px;
+  }
+}
+
+@media (max-width: 480px) {
+  .search-input {
+    width: 200px;
   }
 }
 </style>

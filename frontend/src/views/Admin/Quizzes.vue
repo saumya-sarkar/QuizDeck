@@ -11,9 +11,43 @@
           <div class="d-flex justify-content-between align-items-center">
             <div>
               <h2 class="quizzes-title mb-0">{{ chapterName }} Quizzes</h2>
-              <p class="text-muted mb-0">{{ quizzes.length }} quizzes available</p>
+              <p class="text-muted mb-0">{{ filteredQuizzes.length }} of {{ quizzes.length }} quizzes available</p>
             </div>
-            <div class="d-flex gap-3 align-items-center">
+            <div class="d-flex align-items-center gap-3">
+              <!-- Status Filter Dropdown -->
+              <div class="filter-container">
+                <select 
+                  class="form-select status-filter" 
+                  v-model="statusFilter" 
+                  @change="filterQuizzes"
+                >
+                  <option value="All">All Status</option>
+                  <option value="Active">Active/Available</option>
+                  <option value="Upcoming">Upcoming</option>
+                  <option value="Ended">Ended</option>
+                </select>
+              </div>
+              
+              <!-- Search Bar -->
+              <div class="search-container">
+                <div class="input-group">
+                  <input 
+                    type="text" 
+                    class="form-control search-input" 
+                    placeholder="Search quizzes..." 
+                    v-model="searchQuery"
+                    @input="filterQuizzes"
+                  >
+                  <span v-if="!searchQuery" class="input-group-text search-icon">
+                    <font-awesome-icon icon="search" />
+                  </span>
+                  <span v-if="searchQuery" class="input-group-text clear-icon" @click="clearSearch">
+                    <font-awesome-icon icon="times" />
+                  </span>
+                </div>
+              </div>
+              
+              <!-- Add Quiz Button -->
               <button 
                 class="btn add-quiz-btn d-flex align-items-center gap-2"
                 @click="showQuizCreateModal"
@@ -27,9 +61,9 @@
       </div>
 
       <!-- Quiz Cards View -->
-      <div class="cards-view">
+      <div class="cards-view" v-if="filteredQuizzes.length > 0">
         <div class="row g-4">
-          <div class="col-lg-4 col-md-6" v-for="quiz in quizzes" :key="quiz.id">
+          <div class="col-lg-4 col-md-6" v-for="quiz in filteredQuizzes" :key="quiz.id">
             <QuizCard 
               :quiz="quiz"
               v-on:view-quiz="handleViewQuiz"
@@ -40,8 +74,26 @@
         </div>
       </div>
 
-      <!-- Empty State -->
-      <div v-if="quizzes.length === 0" class="row">
+      <!-- Empty State - No Quizzes Found -->
+      <div v-else-if="quizzes.length > 0 && filteredQuizzes.length === 0" class="row">
+        <div class="col-12 text-center py-5">
+          <font-awesome-icon icon="search" class="fa-3x text-white-50 mb-3" />
+          <h4 class="text-white">No quizzes found</h4>
+          <p class="text-white-50">
+            No quizzes match your current filters. Try adjusting your search or status filter.
+          </p>
+          <button 
+            class="btn btn-outline-light mt-3"
+            @click="clearSearch"
+          >
+            <font-awesome-icon icon="times" class="me-2" />
+            Clear Filters
+          </button>
+        </div>
+      </div>
+
+      <!-- Empty State - No Quizzes Available -->
+      <div v-else-if="quizzes.length === 0" class="row">
         <div class="col-12 text-center py-5">
           <font-awesome-icon icon="question-circle" class="fa-3x text-white-50 mb-3" />
           <h4 class="text-white">No Quizzes Available</h4>
@@ -105,6 +157,9 @@ export default {
       chapterName: '',
       subjectName: '', 
       quizzes: [],
+      filteredQuizzes: [],
+      searchQuery: '',
+      statusFilter: 'All',
       breadcrumbItems: []
     };
   },
@@ -134,6 +189,39 @@ export default {
         }
       ];
     },
+
+    filterQuizzes() {
+      let filtered = [...this.quizzes];
+
+      // Apply status filter
+      if (this.statusFilter !== 'All') {
+        filtered = filtered.filter(quiz => {
+          const status = quiz.quiz_status;
+          if (this.statusFilter === 'Active') {
+            return status === 'Active' || status === 'Available';
+          }
+          return status === this.statusFilter;
+        });
+      }
+
+      // Apply search filter
+      if (this.searchQuery.trim()) {
+        const query = this.searchQuery.toLowerCase();
+        filtered = filtered.filter(quiz => 
+          quiz.name.toLowerCase().includes(query) ||
+          quiz.difficulty.toLowerCase().includes(query) ||
+          quiz.quiz_type.toLowerCase().includes(query)
+        );
+      }
+
+      this.filteredQuizzes = filtered;
+    },
+
+    clearSearch() {
+      this.searchQuery = '';
+      this.statusFilter = 'All';
+      this.filterQuizzes();
+    },
     
     showQuizCreateModal() {
       this.$refs.quizCreate.show({
@@ -149,6 +237,7 @@ export default {
       // Add to the list
       if (newQuiz) {
         this.quizzes.push(newQuiz);
+        this.filterQuizzes(); // Apply filters to include the new quiz
       } else {
         // If the response doesn't contain the data, refresh the list
         this.fetchQuizzes();
@@ -176,6 +265,7 @@ export default {
       toast.success(`Quiz ${deletedQuiz.name} deleted successfully.`, { theme: 'light' });
       // Remove the deleted quiz from the list
       this.quizzes = this.quizzes.filter(quiz => quiz.id !== deletedQuiz.id);
+      this.filterQuizzes(); // Apply filters after deletion
     },
     
     
@@ -210,6 +300,7 @@ export default {
         this.chapterName = response.data.name;
         this.subjectName = response.data.subject_name;
         this.chapter_id = response.data.id;
+        this.filterQuizzes(); // Apply initial filtering
       } catch (error) {
         console.error('Error fetching quizzes:', error);
       }
@@ -252,6 +343,87 @@ export default {
 .text-muted {
   color: rgba(255, 255, 255, 0.7) !important;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* Filter and Search Styles */
+.filter-container {
+  margin-right: 1rem;
+}
+
+.status-filter {
+  background: rgba(255, 255, 255, 0.15) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  color: white !important;
+  backdrop-filter: blur(10px);
+  border-radius: 25px !important;
+  padding: 0.75rem 1rem !important;
+  min-width: 160px;
+  font-size: 0.9rem;
+}
+
+.status-filter:focus {
+  background: rgba(255, 255, 255, 0.25) !important;
+  border-color: rgba(255, 255, 255, 0.4) !important;
+  box-shadow: 0 0 0 0.2rem rgba(255, 255, 255, 0.25) !important;
+  color: white !important;
+}
+
+.status-filter option {
+  background: #4a5568 !important;
+  color: white !important;
+  padding: 0.5rem;
+}
+
+/* Search Bar Styles */
+.search-container {
+  margin-right: 1rem;
+}
+
+.search-input {
+  background: rgba(255, 255, 255, 0.15) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  color: white !important;
+  backdrop-filter: blur(10px);
+  border-radius: 25px 0 0 25px !important;
+  padding: 0.75rem 1rem !important;
+  width: 300px;
+}
+
+.search-input::placeholder {
+  color: rgba(255, 255, 255, 0.6) !important;
+}
+
+.search-input:focus {
+  background: rgba(255, 255, 255, 0.25) !important;
+  border-color: rgba(255, 255, 255, 0.4) !important;
+  box-shadow: 0 0 0 0.2rem rgba(255, 255, 255, 0.25) !important;
+  color: white !important;
+}
+
+.search-icon {
+  background: rgba(255, 255, 255, 0.2) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  border-left: none !important;
+  color: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
+  border-radius: 0 25px 25px 0 !important;
+}
+
+.clear-icon {
+  background: rgba(255, 255, 255, 0.2) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  border-left: none !important;
+  color: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
+  border-radius: 0 25px 25px 0 !important;
+  cursor: pointer;
+}
+
+.clear-icon:hover {
+  background: rgba(255, 255, 255, 0.25) !important;
+  border-color: rgba(255, 255, 255, 0.3) !important;
+  color: white !important;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1) !important;
 }
 
 .add-quiz-btn {
