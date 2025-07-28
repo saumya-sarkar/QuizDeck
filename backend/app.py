@@ -4,9 +4,11 @@ from models import db, user_datastore
 from flask_restful import Api
 from flask_cors import CORS
 from celery import Celery
-import redis
-import os
 from celery_init import celery_init_app
+from celery.schedules import crontab
+from tasks import generate_admin_report, monthly_report, daily_reminder
+
+
 
 
 def create_app():
@@ -30,7 +32,18 @@ def create_app():
 app, api = create_app()
 celery = celery_init_app(app)
 celery.autodiscover_tasks()
-
+celery.conf.beat_schedule = {
+    'send_monthly_report_task': {
+        'task': 'monthly_report',
+        'schedule': crontab(day_of_month='1', hour=19, minute=0),  # Run at 19:00 on the first day of every month
+    },
+    'send_daily_reminder_task': {
+        'task': 'daily_reminder',
+        'schedule': crontab(minute='*/5'),  # Every 5 minutes
+    }
+}
+# 30 # Every 30 seconds
+# crontab(hour=4, minute=30)  # Every day at 4:30 AM
 
 from routes.user import UserRegister, UserLogin, qualificationList, checkUsername, checkEmail, userDetails
 api.add_resource(UserRegister, '/register')  # localhost:5000/api/register
@@ -88,6 +101,13 @@ from routes.csv_export import UserAttemptsCSVExport, CSVExportStatus, CSVExportD
 api.add_resource(UserAttemptsCSVExport, '/csv-export/generate')
 api.add_resource(CSVExportStatus, '/csv-export/status')
 api.add_resource(CSVExportDownload, '/csv-export/download/<string:task_id>')  # localhost:5000/api/csv-export/download/<task_id>
+
+# @celery.on_after_finalize.connect 
+# def setup_periodic_tasks(sender, **kwargs):
+#     sender.add_periodic_task(
+#         crontab(minute = '*/2'),
+#         monthly_report.s(),
+#     )
 
 
 if __name__ == '__main__':

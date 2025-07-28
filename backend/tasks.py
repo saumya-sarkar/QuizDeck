@@ -1,11 +1,12 @@
 from celery import shared_task
-from models import QuizAttempt, ist_format
-# from utils import format_report
-# from mail import send_email
+from models import QuizAttempt, ist_format, User, Quiz
+from utils import format_report
+from mail import send_email
 from datetime import datetime, timedelta
-# import requests #plural
+import requests
 import csv
 import os
+from time import sleep
 
 
 def format_time(seconds):
@@ -111,3 +112,75 @@ def generate_admin_report(self, period):
     except Exception as exc:
         print(f"CSV generation failed: {str(exc)}")
         raise self.retry(exc=exc, countdown=60, max_retries=3)
+    
+
+
+@shared_task(ignore_results = False, name = "monthly_report")
+def monthly_report():
+    users = User.query.all()
+    for user in users[1:]:
+        user_data = {}
+        user_data['username'] = user.username if user.username else "not found"
+        user_data['email'] = user.email if user.email else "not provided"
+        user_performance = []
+        thirty_days_ago = datetime.now() - timedelta(days=30)
+        user_attempts = QuizAttempt.query.filter(QuizAttempt.started_at >= thirty_days_ago, 
+                                                 QuizAttempt.user_id == user.id
+                                                ).order_by(QuizAttempt.started_at.desc()).all()
+        serial_no = 1
+        for attempt in user_attempts:
+            this_attempt = {}
+            time_taken = format_time(attempt.time_taken_seconds) if attempt.time_taken_seconds else "00:00:00"
+            percentage = round((attempt.user_score / attempt.total_marks) * 100, 2) if attempt.total_marks > 0 else 0
+            this_attempt["serial_no"] = serial_no
+            this_attempt["quiz_name"] = attempt.quiz.name
+            this_attempt["quiz_difficulty"] = attempt.quiz.difficulty.value
+            this_attempt["quiz_type"] = attempt.quiz.quiz_type.value
+            this_attempt["quiz_chapter"] = attempt.quiz.chapter.name
+            this_attempt["quiz_subject"] = attempt.quiz.chapter.subject.name
+            this_attempt["started_at"] = ist_format(attempt.started_at)
+            this_attempt["submitted_at"] = ist_format(attempt.submitted_at) if attempt.submitted_at else "Not Submitted"
+            this_attempt["time_taken"] = time_taken
+            this_attempt["user_score"] = attempt.user_score
+            this_attempt["total_marks"] = attempt.total_marks
+            this_attempt["percentage"] = percentage
+            this_attempt["result_status"] = getResultStatus(percentage)
+            this_attempt["status"] = attempt.status
+            serial_no += 1
+            user_performance.append(this_attempt)
+        user_data['performance'] = user_performance
+        message = format_report('templates/mail_template_css.html', user_data)
+        send_email(user.email, subject = "Monthly Performance Report - QuizDeck", message = message)
+    return "Monthly reports sent"
+
+
+@shared_task(ignore_results = False, name = "daily_reminder")
+def daily_reminder():
+    key = "AIzaSyDdI0hCZtE6vySjMm-WEfRq3CPzqKqqsHI"
+    token = "O1AFV34l1DuvGi4DfTk89Vqe5Rgn5RfyxwAa0pKeuIA"
+    url = f"https://chat.googleapis.com/v1/spaces/AAQA7RvR5EM/messages?key={key}&token={token}"
+    
+    users = User.query.all()
+    quizzes = Quiz.query.all()
+    for user in users[1:]:
+        attempted_quizzes = [attempt.quiz_id for attempt in user.quiz_attempts]
+        quiz_string = ""
+        for quiz in quizzes:
+            if quiz.id not in attempted_quizzes and quiz.check_status() != "Ended":
+                quiz_string += f"🔵{quiz.name} -> 📌{quiz.check_status()}\n"
+                
+        text = (
+                    f"Hi {user.username} 👋\n"
+                    f"You have some quizzes waiting for you:\n\n"
+                    f"{quiz_string}"
+                    f"Start now 👉 http://localhost:8080/"
+                )
+
+        response = requests.post(url, json = {"text": text})
+        sleep(10)  # To avoid hitting rate limits
+        if response.status_code == 200:
+            print("Daily reminders sent successfully")
+        else:
+            print(f"Failed to send daily reminder: {response.status_code} - {response.text}")
+    # Return a message indicating success or failure
+    return "Daily reminders sent."

@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Monthly Performance Report - QuizDeck</title>
+    <style>
+        /* Email-safe CSS Reset */
+        body, table, td, p, h1, h2, h3, h4, h5, h6 {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, Arial, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #f5576c 75%, #4facfe 100%);
+            padding: 20px 0;
+            min-height: 100vh;
+        }
+        
+        .email-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 30px 20px;
+            text-align: center;
+            color: white;
+        }
+        
+        .header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        
+        .header .subtitle {
+            font-size: 16px;
+            opacity: 0.9;
+            font-weight: 500;
+        }
+        
+        .content {
+            padding: 30px 20px;
+        }
+        
+        .greeting {
+            background: rgba(102, 126, 234, 0.1);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .greeting h2 {
+            color: #2c3e50;
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+        
+        .greeting p {
+            color: #5a6c7d;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+        
+        .performance-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+        }
+        
+        .performance-table th {
+            background: #667eea;
+            color: white;
+            padding: 15px 10px;
+            font-size: 13px;
+            font-weight: 600;
+            text-align: left;
+            border: none;
+        }
+        
+        .performance-table td {
+            padding: 12px 10px;
+            border-bottom: 1px solid #e9ecef;
+            font-size: 13px;
+            color: #495057;
+        }
+        
+        .performance-table tr:nth-child(even) {
+            background: rgba(102, 126, 234, 0.03);
+        }
+        
+        .performance-table tr:hover {
+            background: rgba(102, 126, 234, 0.06);
+        }
+        
+        .result-excellent { color: #28a745; font-weight: 600; }
+        .result-good { color: #007bff; font-weight: 600; }
+        .result-average { color: #ffc107; font-weight: 600; }
+        .result-poor { color: #dc3545; font-weight: 600; }
+        
+        .summary-section {
+            background: linear-gradient(135deg, rgba(40, 167, 69, 0.1), rgba(32, 201, 151, 0.1));
+            padding: 25px;
+            border-radius: 15px;
+            margin: 25px 0;
+            border-left: 4px solid #28a745;
+        }
+        
+        .summary-section h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 20px;
+        }
+        
+        .summary-item {
+            display: table;
+            width: 100%;
+            margin-bottom: 8px;
+        }
+        
+        .summary-label {
+            display: table-cell;
+            font-weight: 600;
+            color: #495057;
+            width: 40%;
+        }
+        
+        .summary-value {
+            display: table-cell;
+            color: #28a745;
+            font-weight: 700;
+            text-align: right;
+        }
+        
+        .footer {
+            background: #2c3e50;
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+        }
+        
+        .footer p {
+            margin: 5px 0;
+            font-size: 14px;
+        }
+        
+        .footer .brand {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .cta-section {
+            text-align: center;
+            margin: 30px 0;
+        }
+        
+        .cta-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 30px;
+            text-decoration: none;
+            border-radius: 25px;
+            font-weight: 600;
+            font-size: 16px;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+            transition: transform 0.3s ease;
+        }
+        
+        .cta-button:hover {
+            transform: translateY(-2px);
+            color: white;
+        }
+        
+        /* Mobile responsiveness */
+        @media (max-width: 600px) {
+            .email-container {
+                margin: 10px;
+                border-radius: 15px;
+            }
+            
+            .content {
+                padding: 20px 15px;
+            }
+            
+            .header {
+                padding: 20px 15px;
+            }
+            
+            .header h1 {
+                font-size: 24px;
+            }
+            
+            .performance-table {
+                font-size: 12px;
+            }
+            
+            .performance-table th,
+            .performance-table td {
+                padding: 8px 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <!-- Header Section -->
+        <div class="header">
+            <h1>📊 Monthly Performance Report</h1>
+            <div class="subtitle">Your Learning Journey with QuizDeck</div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="content">
+            <!-- Greeting Section -->
+            <div class="greeting">
+                <h2>Hello {{ data['username'] }}! 👋</h2>
+                <p>We're excited to share your performance highlights for this month. You've been making great progress on your learning journey!</p>
+            </div>
+            
+            <!-- Performance Summary -->
+            {% set total_attempts = data['performance']|length %}
+            {% set ns = namespace(total_score=0, total_possible=0) %}
+            {% for attempt in data['performance'] %}
+                {% set ns.total_score = ns.total_score + attempt.user_score %}
+                {% set ns.total_possible = ns.total_possible + attempt.total_marks %}
+            {% endfor %}
+            {% set avg_percentage = (ns.total_score / ns.total_possible * 100) if ns.total_possible > 0 else 0 %}
+
+            
+            <div class="summary-section">
+                <h3>🎯 This Month's Summary</h3>
+                <div class="summary-item">
+                    <span class="summary-label">Total Quiz Attempts:</span>
+                    <span class="summary-value">{{ total_attempts }}</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">Average Performance:</span>
+                    <span class="summary-value">{{ "%.1f"|format(avg_percentage) }}%</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">Best Performance:</span>
+                    <span class="summary-value">
+                        {% set best_score = data['performance']|map(attribute='percentage')|max %}
+                        {{ "%.1f"|format(best_score) if best_score else 0 }}%
+                    </span>
+                </div>
+
+            </div>
+            
+            <!-- Detailed Performance Table -->
+            {% if data['performance'] %}
+            <h3 style="color: #2c3e50; margin: 30px 0 20px 0;">📋 Detailed Performance Report</h3>
+            <table class="performance-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Quiz</th>
+                        <th>Subject</th>
+                        <th>Type</th>
+                        <th>Score</th>
+                        <th>%</th>
+                        <th>Performance</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for attempt in data['performance'] %}
+                    <tr>
+                        <td>{{ attempt['serial_no'] if attempt['serial_no'] else loop.index }}</td>
+                        <td><strong>{{ attempt['quiz_name'] }}</strong><br>
+                            <small style="color: #6c757d;">{{ attempt['quiz_chapter'] }}</small></td>
+                        <td>{{ attempt['quiz_subject'] }}</td>
+                        <td>
+                            {% if attempt['quiz_type'] == 'Practice' %}
+                                <span style="background: rgba(74, 144, 226, 0.2); color: #4a90e2; padding: 4px 8px; border-radius: 12px; font-size: 11px; font-weight: 600;">
+                                    {{ attempt['quiz_type'] }}
+                                </span>
+                            {% elif attempt['quiz_type'] == 'Mock' %}
+                                <span style="background: rgba(142, 68, 173, 0.2); color: #8e44ad; padding: 4px 8px; border-radius: 12px; font-size: 11px; font-weight: 600;">
+                                    {{ attempt['quiz_type'] }}
+                                </span>
+                            {% else %}
+                                <span style="background: rgba(26, 188, 156, 0.2); color: #1abc9c; padding: 4px 8px; border-radius: 12px; font-size: 11px; font-weight: 600;">
+                                    {{ attempt['quiz_type'] }}
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td><strong>{{ attempt['user_score'] }}/{{ attempt['total_marks'] }}</strong></td>
+                        <td>
+                            <span class="
+                                {% if attempt['percentage'] >= 80 %}result-excellent
+                                {% elif attempt['percentage'] >= 60 %}result-good
+                                {% elif attempt['percentage'] >= 40 %}result-average
+                                {% else %}result-poor{% endif %}">
+                                {{ "%.1f"|format(attempt['percentage']) }}%
+                            </span>
+                        </td>
+                        <td>
+                            {% set result_status = attempt['result_status'] if attempt['result_status'] else 
+                                ('Outstanding' if attempt['percentage'] >= 90 else
+                                 'Excellent' if attempt['percentage'] >= 80 else
+                                 'Very Good' if attempt['percentage'] >= 70 else
+                                 'Good' if attempt['percentage'] >= 60 else
+                                 'Average' if attempt['percentage'] >= 50 else
+                                 'Needs Improvement') %}
+                            
+                            {% if result_status == 'Outstanding' %}
+                            <span style="background: rgba(138, 43, 226, 0.2); color: #8A2BE2; padding: 4px 8px; border-radius: 12px; font-size: 11px; font-weight: 600;">
+                                {{ result_status }}
+                            </span>
+                            {% elif result_status == 'Excellent' %}
+                            <span style="background: rgba(40, 167, 69, 0.2); color: #28a745; padding: 4px 8px; border-radius: 12px; font-size: 11px; font-weight: 600;">
+                                {{ result_status }}
+                            </span>
+                            {% elif result_status == 'Very Good' %}
+                            <span style="background: rgba(32, 201, 151, 0.2); color: #20c997; padding: 4px 8px; border-radius: 12px; font-size: 11px; font-weight: 600;">
+                                {{ result_status }}
+                            </span>
+                            {% elif result_status == 'Good' %}
+                            <span style="background: rgba(0, 123, 255, 0.2); color: #007bff; padding: 4px 8px; border-radius: 12px; font-size: 11px; font-weight: 600;">
+                                {{ result_status }}
+                            </span>
+                            {% elif result_status == 'Average' %}
+                            <span style="background: rgba(255, 193, 7, 0.2); color: #ffc107; padding: 4px 8px; border-radius: 12px; font-size: 11px; font-weight: 600;">
+                                {{ result_status }}
+                            </span>
+                            {% else %}
+                            <span style="background: rgba(220, 53, 69, 0.2); color: #dc3545; padding: 4px 8px; border-radius: 12px; font-size: 11px; font-weight: 600;">
+                                {{ result_status }}
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td>{{ attempt['started_at'][:10] if attempt['started_at'] else 'N/A' }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% endif %}
+            
+            <!-- Call to Action -->
+            <div class="cta-section">
+                <p style="color: #5a6c7d; margin-bottom: 20px; font-size: 16px;">
+                    Keep up the great work! Ready to tackle more challenges?
+                </p>
+                <a href="http://localhost:8080/login" class="cta-button">Continue Learning 🚀</a>
+            </div>
+            
+            <!-- Thank You Message -->
+            <div style="text-align: center; margin-top: 30px; padding: 20px; background: rgba(102, 126, 234, 0.05); border-radius: 15px;">
+                <p style="color: #495057; font-size: 16px; margin: 0;">
+                    Thank you for choosing <strong>QuizDeck</strong> for your learning journey! 
+                    Your dedication to continuous improvement inspires us. 💪
+                </p>
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <div class="footer">
+            <div class="brand">QuizDeck</div>
+            <p>© 2025 QuizDeck | Created with ❤️ by Saumya Sarkar</p>
+            <p style="font-size: 12px; opacity: 0.8;">Empowering learners worldwide through interactive quizzes</p>
+        </div>
+    </div>
+</body>
+</html>
