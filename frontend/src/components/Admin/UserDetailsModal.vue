@@ -106,8 +106,8 @@
                       <div class="stat-label">In Progress</div>
                     </div>
                     <div class="stat-item">
-                      <div class="stat-value">{{ userDetails?.quiz_stats?.average_score || 0 }}%</div>
-                      <div class="stat-label">Average Score</div>
+                      <div class="stat-value">{{ userDetails?.quiz_stats?.average_percentage || 0 }}%</div>
+                      <div class="stat-label">Average Percentage</div>
                     </div>
                   </div>
                 </div>
@@ -148,71 +148,6 @@
                     <p class="text-white-50 mb-0">No quiz attempts found</p>
                   </div>
                 </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Recent Attempts Section -->
-          <div class="recent-attempts-section">
-            <div class="attempts-card glass-info-card">
-              <div class="d-flex justify-content-between align-items-center mb-3">
-                <h6 class="card-title mb-0">
-                  <font-awesome-icon icon="history" class="me-2" />
-                  Recent Quiz Attempts
-                </h6>
-                <button 
-                  class="btn btn-outline-light btn-sm"
-                  @click="viewAllAttempts"
-                >
-                  View All Attempts
-                </button>
-              </div>
-              
-              <div v-if="userDetails?.recent_attempts?.length > 0" class="attempts-list">
-                <div class="table-responsive">
-                  <table class="table table-hover attempts-table">
-                    <thead>
-                      <tr>
-                        <th>Quiz</th>
-                        <th>Subject</th>
-                        <th>Score</th>
-                        <th>Status</th>
-                        <th>Date</th>
-                        <th>Time Taken</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr 
-                        v-for="attempt in userDetails.recent_attempts.slice(0, 5)" 
-                        :key="attempt.id"
-                        class="attempt-row"
-                      >
-                        <td class="quiz-info">
-                          <div class="quiz-name">{{ attempt.quiz_name }}</div>
-                          <small class="chapter-name text-muted">{{ attempt.chapter_name }}</small>
-                        </td>
-                        <td class="subject-name">{{ attempt.subject_name }}</td>
-                        <td class="score-info">
-                          <span class="score-value">{{ attempt.score }}/{{ attempt.total_marks }}</span>
-                          <span class="score-percentage" :class="getScoreClass(attempt.percentage)">
-                            ({{ attempt.percentage }}%)
-                          </span>
-                        </td>
-                        <td class="status-info">
-                          <span class="badge" :class="getStatusClass(attempt.status)">
-                            {{ formatStatus(attempt.status) }}
-                          </span>
-                        </td>
-                        <td class="date-info">{{ formatDateTime(attempt.started_at) }}</td>
-                        <td class="time-info">{{ formatDuration(attempt.time_taken_seconds) }}</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-              <div v-else class="no-attempts text-center py-4">
-                <font-awesome-icon icon="clipboard-list" class="fa-2x text-white-50 mb-2" />
-                <p class="text-white-50 mb-0">No quiz attempts found</p>
               </div>
             </div>
           </div>
@@ -404,56 +339,11 @@ export default {
       });
     },
 
-    formatDateTime(dateString) {
-      if (!dateString) return 'N/A';
-      return new Date(dateString).toLocaleDateString('en-IN', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-      });
-    },
-
-    formatDuration(seconds) {
-      if (!seconds) return 'N/A';
-      
-      const hours = Math.floor(seconds / 3600);
-      const minutes = Math.floor((seconds % 3600) / 60);
-      const secs = seconds % 60;
-      
-      if (hours > 0) {
-        return `${hours}h ${minutes}m`;
-      } else if (minutes > 0) {
-        return `${minutes}m ${secs}s`;
-      } else {
-        return `${secs}s`;
-      }
-    },
-
-    formatStatus(status) {
-      const statusMap = {
-        'completed': 'Completed',
-        'auto_submitted': 'Auto Submitted',
-        'in_progress': 'In Progress'
-      };
-      return statusMap[status] || status;
-    },
-
     getScoreClass(percentage) {
       if (percentage >= 80) return 'score-excellent';
       if (percentage >= 60) return 'score-good';
       if (percentage >= 40) return 'score-average';
       return 'score-poor';
-    },
-
-    getStatusClass(status) {
-      const statusClasses = {
-        'completed': 'bg-success',
-        'auto_submitted': 'bg-warning',
-        'in_progress': 'bg-info'
-      };
-      return statusClasses[status] || 'bg-secondary';
     }
   }
 };
@@ -644,53 +534,8 @@ export default {
   background: linear-gradient(90deg, #dc3545, #e83e8c);
 }
 
-/* Attempts Table */
-.attempts-table {
-  color: white;
-  margin: 0;
-}
-
-.attempts-table thead th {
-  background: rgba(255, 255, 255, 0.1);
-  color: rgba(255, 255, 255, 0.9);
-  font-weight: 600;
-  border: none;
-  padding: 0.75rem;
-  font-size: 0.85rem;
-}
-
-.attempts-table tbody td {
-  background: rgba(255, 255, 255, 0.05);
-  border-color: rgba(255, 255, 255, 0.1);
-  padding: 0.75rem;
-}
-
-.attempt-row:hover {
-  background: rgba(255, 255, 255, 0.1) !important;
-}
-
-.quiz-name {
-  font-weight: 600;
-  color: white;
-}
-
-.chapter-name {
-  font-size: 0.8rem;
-  color: rgba(255, 255, 255, 0.6) !important;
-}
-
-.score-value {
-  font-weight: 600;
-  color: white;
-}
-
-.score-percentage {
-  font-size: 0.85rem;
-  font-weight: 500;
-}
-
 /* Empty States */
-.no-performance, .no-attempts {
+.no-performance {
   padding: 2rem;
 }
 

@@ -8,7 +8,8 @@ import UserSubjects from "../views/User/UserSubjects.vue";
 import UserChapters from "../views/User/UserChapters.vue";
 import UserQuizzes from "@/views/User/UserQuizzes.vue";
 import QuizTaking from "@/views/User/QuizTaking.vue";
-import QuizResultPage from "../views/User/QuizResultPage.vue"
+import QuizResultPage from "../views/User/QuizResultPage.vue";
+import UserAnalytics from "@/views/User/UserAnalytics.vue";
 // import Subject from "../views/Student/Subject.vue";
 // const QuizDetails = () =>
 //   import(/*{ webpackPrefetch: true }*/ "../views/Student/Quiz.vue");
@@ -93,7 +94,16 @@ const UserRoutes = [
             requiresAuth: true,
             title: "Quiz Result"
           }
+  },
+  {
+  path: `/user/:userId/analytics`,
+  name: "UserAnalytics",
+  component: UserAnalytics,
+  meta: {
+    requiresAuth: true,
+    title: "My Analytics"
   }
+  },
 //       {
 //         path: "quiz/history",
 //         name: "quiz-history",

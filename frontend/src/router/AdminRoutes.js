@@ -5,7 +5,9 @@ import Quizzes from "@/views/Admin/Quizzes.vue";
 import Questions from "@/views/Admin/Questions.vue";
 import AdminUsers from "@/views/Admin/AdminUsers.vue";
 import CSVExportManager from "@/views/Admin/CSVExportManager.vue";
-
+import AdminAnalytics from "@/views/Admin/AdminAnalytics.vue";
+import QuizAttempts from "@/views/Admin/QuizAttempts.vue";
+import AdminQuizResultPage from "@/views/Admin/AdminQuizResultPage.vue";
 
 const AdminRoutes = [
   {
@@ -69,6 +71,26 @@ const AdminRoutes = [
     },
   },
   {
+    path: "/admin/users/:currentUserId/attempts",
+    name: "QuizAttempts",
+    component: QuizAttempts,
+    meta: {
+      requiresAuth: true,
+      requiresAdmin: true,
+      title: "Quiz Attempts"
+    },
+  },
+  {
+    path: "/admin/users/:currentUserId/attempts/:currentAttemptId",
+    name: "AdminQuizResultPage",
+    component: AdminQuizResultPage,
+    meta: {
+      requiresAuth: true,
+      requiresAdmin: true,
+      title: "Quiz Results"
+    },
+  },
+  {
     path: "/admin/csv-export",
     name: "CSVExportManager", 
     component: CSVExportManager,
@@ -77,88 +99,17 @@ const AdminRoutes = [
       requiresAdmin: true,
       title: "CSV Export"
     },
+  },
+  {
+  path: "/admin/analytics",
+  name: "AdminAnalytics", 
+  component: AdminAnalytics,
+  meta: {
+    requiresAuth: true,
+    requiresAdmin: true,
+    title: "Analytics Dashboard"
+    },
   }
-//   {
-//     path: "/admin/users",
-//     name: "Users",
-//     component: Users,
-//     meta: {
-//       requiresAuth: true,
-//       title: "Users",
-//       roles: ["admin"],
-//     },
-//   },
-//   {
-//     path: "/admin/transactions",
-//     name: "Transactions",
-//     component: Transactions,
-//     meta: {
-//       requiresAuth: true,
-//       title: "Transactions",
-//       roles: ["admin"],
-//     },
-//   },
-
-//   {
-//     path: "/admin/subject/:subjectId/chapter/:chapterId/quiz/create",
-//     name: "CreateQuiz",
-//     component: CreateQuiz,
-//     meta: {
-//       requiresAuth: true,
-//       title: "Create Quiz",
-//       roles: ["admin"],
-//     },
-//   },
-//   {
-//     path: "/admin/subject/:subjectId/chapter/:chapterId/quiz/:quizId",
-//     name: "Quiz",
-//     component: Quiz,
-//     meta: {
-//       requiresAuth: true,
-//       title: "Quiz",
-//       roles: ["admin"],
-//     },
-//   },
-//   {
-//     path: "/admin/subject/:subjectId/chapter/:chapterId/quiz/:quizId/edit",
-//     name: "EditQuiz",
-//     component: EditQuiz,
-//     meta: {
-//       requiresAuth: true,
-//       title: "Edit Quiz",
-//       roles: ["admin"],
-//     },
-//   },
-//   {
-//     path: "/admin/student/:id",
-//     name: "StudentDetails",
-//     component: StudentDetails,
-//     meta: {
-//       requiresAuth: true,
-//       title: "Student Details",
-//       roles: ["admin"],
-//     },
-//   },
-//   {
-//     path: "/admin/summary",
-//     name: "Summary",
-//     component: Summary,
-//     meta: {
-//       requiresAuth: true,
-//       title: "Summary",
-//       roles: ["admin"],
-//     },
-//   },
-//   {
-//     path: "/admin/student/:id/quizDetails/:quizId",
-//     name: "user-quiz-details",
-//     component: UserQuizDetails,
-//     meta: {
-//       requiresAuth: true,
-//       title: "User Quiz Details",
-//       roles: ["admin"],
-//     },
-//   },
 ];
 
 export default AdminRoutes;

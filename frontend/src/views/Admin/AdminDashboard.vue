@@ -48,7 +48,7 @@
             </div>
             <div class="stats-content">
               <h3>{{ totalStudents }}</h3>
-              <p>Active Students</p>
+              <p>Active Users</p>
             </div>
           </div>
         </div>
@@ -59,7 +59,7 @@
             </div>
             <div class="stats-content">
               <h3>{{ totalTests }}</h3>
-              <p>Tests Created</p>
+              <p>Quizzes Created</p>
             </div>
           </div>
         </div>
@@ -86,16 +86,16 @@
                   @click="navigateToUsers"
                 >
                   <font-awesome-icon icon="users" />
-                  <span>View Students</span>
+                  <span>View Users</span>
                 </button>
               </div>
               <div class="col-lg-3 col-md-6">
                 <button 
                   class="btn quick-action-btn w-100"
-                  @click="navigateToTests"
+                  @click="exportProgress"
                 >
-                  <font-awesome-icon icon="clipboard-check" />
-                  <span>Create Test</span>
+                  <font-awesome-icon icon="download" />
+                  <span>Export Progress</span>
                 </button>
               </div>
               <div class="col-lg-3 col-md-6">
@@ -245,23 +245,17 @@ export default {
       }
 
       try {
-        // You can create separate API endpoints for dashboard stats
-        // For now, using dummy data
-        this.totalSubjects = 12;
-        this.totalChapters = 48;
-        this.totalStudents = 156;
-        this.totalTests = 23;
         
         // Uncomment and modify when you have actual API endpoints
-        // const response = await axios.get(`${BASE_URL}/dashboard/stats`, {
-        //   headers: {
-        //     'Authorization': token,
-        //   },
-        // });
-        // this.totalSubjects = response.data.subjects;
-        // this.totalChapters = response.data.chapters;
-        // this.totalStudents = response.data.students;
-        // this.totalTests = response.data.tests;
+        const response = await axios.get(`${BASE_URL}/admin/dashboard/stats`, {
+          headers: {
+            'Authorization': token,
+          },
+        });
+        this.totalSubjects = response.data.total_subjects;
+        this.totalChapters = response.data.total_chapters;
+        this.totalStudents = response.data.total_users;
+        this.totalTests = response.data.total_quizzes;
       } catch (error) {
         console.error('Error fetching dashboard stats:', error);
       }
@@ -275,12 +269,12 @@ export default {
       this.$router.push('/admin/users');
     },
 
-    navigateToTests() {
-      this.$router.push('/admin/tests');
+    exportProgress() {
+      this.$router.push('/admin/csv-export');
     },
 
     navigateToReports() {
-      this.$router.push('/admin/reports');
+      this.$router.push('/admin/analytics');
     }
   }
 };

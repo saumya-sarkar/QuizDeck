@@ -1,4 +1,4 @@
-from models import db, user_datastore, Question
+from models import db, user_datastore, User, ist_format
 # from app import app
 # from flask import current_app as app
 from app import create_app
@@ -18,9 +18,9 @@ def create_roles():
 
 
 def create_admin():
-    if not user_datastore.find_user(email='admin@quizapp.com') and user_datastore.find_role("admin"):
-        user_datastore.create_user(email='admin@quizapp.com', username='admin', password_hash=hash_password('admin'), 
-                                   full_name= "Saumya Sarkar", qualification= "PG", dob=date(2000, 1, 1), roles=['admin'])
+    if not user_datastore.find_user(email='admin@quizdeck.com') and user_datastore.find_role("admin"):
+        user_datastore.create_user(email='admin@quizdeck.com', username='Admin', password_hash=hash_password('admin'), 
+                                   full_name= "Admin", qualification= "PG", dob=date(2000, 1, 1), roles=['admin'])
         db.session.commit()
         print("Admin created.")
     else:
@@ -45,7 +45,7 @@ with app.app_context():
     # Example of dropping a table (uncomment if needed)
     
     # # Define the table name you want to drop
-    # table_name = 'quiz'
+    # table_name = 'user'
     # column_name = 'is_unlocked_by_celery'
 
     # # Create a SQL DROP TABLE statement
@@ -57,6 +57,7 @@ with app.app_context():
     # # Execute the SQL statement
     # with db.engine.connect() as connection:
     #     connection.execute(sql_statement)
+        # connection.execute(drop_table)
 print("Database initialized and roles created.")
 
 

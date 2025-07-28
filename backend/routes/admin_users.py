@@ -1,7 +1,7 @@
 from flask_security import auth_required, roles_accepted
 from flask_restful import Resource, reqparse
-from models import db, User, QuizAttempt, Quiz, Chapter, Subject, ist_format
-from sqlalchemy import func, desc
+from models import db, User, QuizAttempt, Subject, Chapter, Quiz, ist_format
+from sqlalchemy import desc
 from collections import defaultdict
 
 user_read_fields = reqparse.RequestParser()
@@ -22,15 +22,16 @@ class GetAllUsers(Resource):
             # Calculate user statistics
             total_attempts = QuizAttempt.query.filter_by(user_id=user.id).filter(
                 QuizAttempt.status.in_(['completed', 'auto_submitted'])
-            ).count()
-            
+            )
+            total_attempts_count = total_attempts.count()
             # Calculate average score
-            avg_score_query = db.session.query(func.avg(QuizAttempt.user_score)).filter(
-                QuizAttempt.user_id == user.id,
-                QuizAttempt.status.in_(['completed', 'auto_submitted'])
-            ).scalar()
-            avg_score = round(avg_score_query, 2) if avg_score_query else 0
-            
+            total_user_score = 0
+            total_quiz_marks = 0
+            for attempt in total_attempts:
+                total_user_score += attempt.user_score
+                total_quiz_marks += attempt.total_marks
+            score_percentage = round( (total_user_score/total_quiz_marks)*100, 2) if total_quiz_marks > 0 else 0
+
             # Get last login info
             last_login = ist_format(user.current_login_at) if user.current_login_at else 'Never'
             
@@ -41,11 +42,10 @@ class GetAllUsers(Resource):
                 "full_name": user.full_name,
                 "qualification": user.qualification.value if user.qualification else None,
                 "is_active": user.active,
-                "total_attempts": total_attempts,
-                "average_score": avg_score,
+                "total_attempts": total_attempts_count,
+                "average_score": score_percentage,
                 "last_login": last_login,
-                "login_count": user.login_count or 0,
-                "created_at": ist_format(user.fs_uniquifier) if hasattr(user, 'created_at') else None
+                "login_count": user.login_count or 0
             })
         
         return {
@@ -64,10 +64,7 @@ class GetUserDetails(Resource):
         user = User.query.filter_by(id=user_id).first()
         if not user:
             return {"code": 404, "error_message": "User not found"}, 404
-        
-        # Check if user is admin
-        if any(role.name == 'admin' for role in user.roles):
-            return {"code": 403, "error_message": "Cannot view admin user details"}, 403
+    
         
         # Get detailed quiz attempts
         quiz_attempts = QuizAttempt.query.filter_by(user_id=user_id).all()
@@ -120,26 +117,13 @@ class GetUserDetails(Resource):
             chapter = quiz.chapter
             subject = chapter.subject
             
-            recent_attempts_data.append({
-                'id': attempt.id,
-                'quiz_name': quiz.name,
-                'chapter_name': chapter.name,
-                'subject_name': subject.name,
-                'score': attempt.user_score,
-                'total_marks': attempt.total_marks,
-                'percentage': round((attempt.user_score / attempt.total_marks) * 100, 2) if attempt.total_marks > 0 else 0,
-                'status': attempt.status,
-                'started_at': ist_format(attempt.started_at),
-                'submitted_at': ist_format(attempt.submitted_at) if attempt.submitted_at else None,
-                'time_taken_seconds': attempt.time_taken_seconds
-            })
         
         # User activity timeline
         activity_data = {
             'first_login': ist_format(user.current_login_at) if user.current_login_at else None,
             'last_login': ist_format(user.current_login_at) if user.current_login_at else None,
             'total_login_count': user.login_count or 0,
-            'registration_date': ist_format(user.current_login_at) if user.current_login_at else None  # Approximate
+            'registration_date': ist_format(user.registration_date) if user.registration_date else None
         }
         
         user_details = {
@@ -164,9 +148,6 @@ class GetUserDetails(Resource):
             
             # Subject-wise performance
             "subject_performance": subject_stats,
-            
-            # Recent attempts
-            "recent_attempts": recent_attempts_data,
             
             # Activity data
             "activity": activity_data
@@ -202,4 +183,22 @@ class ToggleUserStatus(Resource):
             "code": 200,
             "message": f"User {user.username} has been {status_text} successfully",
             "is_active": user.active
+        }, 200
+
+class AdminDashboardStats(Resource):
+    @auth_required('token')
+    @roles_accepted('admin')
+    def get(self):
+        # This endpoint can be used to fetch overall admin statistics
+        total_users = User.query.filter(User.roles.any(name='user')).filter_by(active=True).count()
+        total_quizzes = Quiz.query.filter_by(deleted=False).count()
+        total_chapters = Chapter.query.filter_by(deleted=False).count()
+        total_subjects = Subject.query.filter_by(deleted=False).count()
+
+        return {
+            "code": 200,
+            "total_users": total_users,
+            "total_quizzes": total_quizzes,
+            "total_chapters": total_chapters,
+            "total_subjects": total_subjects
         }, 200

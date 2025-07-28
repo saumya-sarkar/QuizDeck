@@ -94,6 +94,18 @@ api.add_resource(GetAllUsers, '/admin/users')  # localhost:5000/api/admin/users
 api.add_resource(GetUserDetails, '/admin/users/details')  # localhost:5000/api/admin/users/details
 api.add_resource(ToggleUserStatus, '/admin/users/toggle-status')  # localhost:5000/api/admin/users/toggle-status
 
+from routes.analytics import AdminAnalytics, UserAnalytics
+
+# Add these API endpoints after your existing routes
+api.add_resource(AdminAnalytics, '/admin/analytics')  # localhost:5000/api/admin/analytics
+api.add_resource(UserAnalytics, '/user/analytics')   # localhost:5000/api/user/analytics
+
+
+# Dashboard Stats API
+from routes.admin_users import AdminDashboardStats
+
+api.add_resource(AdminDashboardStats, '/admin/dashboard/stats')
+
 
 
 from routes.csv_export import UserAttemptsCSVExport, CSVExportStatus, CSVExportDownload

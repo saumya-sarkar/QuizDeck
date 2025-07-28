@@ -112,7 +112,7 @@
                     </div>
                     <div class="stat-item">
                       <div class="stat-value">{{ user.average_score }}%</div>
-                      <div class="stat-label">Avg Score</div>
+                      <div class="stat-label">Percentage</div>
                     </div>
                   </div>
                 </td>
@@ -126,15 +126,6 @@
                     >
                       {{ user.is_active ? 'Active' : 'Inactive' }}
                     </span>
-                    <button 
-                      class="btn btn-sm toggle-status-btn mt-1"
-                      :class="user.is_active ? 'btn-outline-warning' : 'btn-outline-success'"
-                      @click="toggleUserStatus(user)"
-                      :disabled="toggleStatusLoading === user.id"
-                    >
-                      <span v-if="toggleStatusLoading === user.id" class="spinner-border spinner-border-sm me-1"></span>
-                      {{ user.is_active ? 'Deactivate' : 'Activate' }}
-                    </button>
                   </div>
                 </td>
                 
@@ -227,7 +218,6 @@ export default {
       searchQuery: '',
       statusFilter: 'all',
       loading: false,
-      toggleStatusLoading: null,
       breadcrumbItems: [
         {
           name: 'Users',
@@ -306,40 +296,7 @@ export default {
     },
 
     viewUserAttempts(user) {
-      // Navigate to user attempts page - you can implement this
       this.$router.push(`/admin/users/${user.id}/attempts`);
-    },
-
-    async toggleUserStatus(user) {
-      this.toggleStatusLoading = user.id;
-      const toast = useToast();
-      
-      try {
-        const token = sessionStorage.getItem('access_token');
-        
-        if (!token) {
-          toast.error('You must be logged in.');
-          store.dispatch('auth/logoutUser');
-          return;
-        }
-
-        const response = await axios.patch(`${BASE_URL}/admin/users/toggle-status`, {
-          id: user.id
-        }, {
-          headers: { Authorization: `${token}` }
-        });
-        
-        if (response.data.code === 200) {
-          // Update local user data
-          user.is_active = response.data.is_active;
-          toast.success(response.data.message);
-        }
-      } catch (error) {
-        console.error('Error toggling user status:', error);
-        toast.error(error.response?.data?.error_message || 'Failed to update user status');
-      } finally {
-        this.toggleStatusLoading = null;
-      }
     },
 
     handleUserStatusChanged(updatedUser) {
@@ -560,7 +517,7 @@ export default {
 }
 
 .stat-item {
-  text-align: center;
+  text-align: left;
 }
 
 .stat-value {
@@ -579,9 +536,8 @@ export default {
 /* Status */
 .status-container {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.5rem;
+  justify-content: left;
+  align-items: left;
   min-width: 100px;
 }
 
@@ -590,15 +546,6 @@ export default {
   padding: 0.4rem 0.8rem;
   border-radius: 12px;
   font-weight: 600;
-}
-
-.toggle-status-btn {
-  font-size: 0.7rem;
-  padding: 0.3rem 0.6rem;
-  border-radius: 15px;
-  font-weight: 500;
-  backdrop-filter: blur(10px);
-  transition: all 0.3s ease;
 }
 
 /* Actions */
@@ -636,37 +583,5 @@ export default {
 /* Empty and Loading States */
 .empty-state, .loading-state {
   padding: 3rem 1rem;
-}
-
-/* Responsive Design */
-@media (max-width: 1200px) {
-  .search-input {
-    width: 250px;
-  }
-  
-  .stats-grid {
-    flex-direction: column;
-    gap: 0.5rem;
-    min-width: 120px;
-  }
-}
-
-@media (max-width: 768px) {
-  .search-input {
-    width: 200px;
-  }
-  
-  .stats-grid {
-    gap: 0.25rem;
-  }
-  
-  .btn-group {
-    flex-direction: column;
-  }
-  
-  .btn-group .btn {
-    margin-bottom: 0.25rem;
-    margin-right: 0;
-  }
 }
 </style>

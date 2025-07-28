@@ -31,7 +31,9 @@ import {
   faChartPie,
   faHistory,
   faUserCheck,
-  faEnvelope
+  faEnvelope,
+  faUserTimes,
+  faSyncAlt
 } from '@fortawesome/free-solid-svg-icons';
 
 // Import brand icons for social media
@@ -93,6 +95,8 @@ library.add(
   faHistory,
   faUserCheck,
   faEnvelope,
+  faUserTimes,
+  faSyncAlt,
   // Brand icons
   faFacebookF,
   faTwitter,

@@ -49,6 +49,7 @@ class User(db.Model, UserMixin):
     full_name = db.Column(db.String(256), nullable=True)
     qualification = db.Column(Enum(qualification_list), nullable=False, default=qualification_list.OTH)
     dob = db.Column(db.Date(), nullable=True)
+    registration_date = db.Column(db.DateTime(), nullable=True, default=ist_now)
 
     last_login_at = db.Column(db.DateTime())
     current_login_at = db.Column(db.DateTime())

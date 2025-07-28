@@ -23,7 +23,7 @@ submit_quiz_parser.add_argument('is_auto_submit', type=bool, default=False, loca
 
 get_result_parser = reqparse.RequestParser()
 get_result_parser.add_argument('attempt_id', type=int, required=True, location='json')
-get_result_parser.add_argument('attempt_id', type=int, required=True, location='json')
+get_result_parser.add_argument('user_id', type=int, required=True, location='json')
 
 
 class StartQuiz(Resource):
