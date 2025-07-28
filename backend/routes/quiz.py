@@ -1,9 +1,10 @@
 from flask_security import auth_required, roles_accepted
 from flask_restful import Resource, reqparse
-from models import db, Chapter, Quiz, Question, ist_format
+from models import db, Chapter, Quiz, Question, ist_format, ist_now
 from datetime import timedelta, datetime
 from zoneinfo import ZoneInfo
 from dateutil import parser
+from tasks import unlock_quiz_task
 
 
 
@@ -215,7 +216,14 @@ class UpdateQuiz(Resource):
 
         db.session.add(quiz)
         db.session.commit()
-            
+
+        # print(quiz.id)
+        # print(quiz.start_time)
+        if quiz.start_time:
+            start_time = quiz.start_time.astimezone(ZoneInfo("Asia/Kolkata"))
+            unlock_quiz_task.apply_async((quiz.id,), eta=start_time)
+            print(f"Unlock task scheduled for quiz {quiz.name} with ID {quiz.id} at {start_time}")
+
         return {
                 "id": quiz.id,
                 "name": quiz.name,
@@ -324,6 +332,12 @@ class UpdateQuiz(Resource):
         quiz.is_locked = is_locked
 
         db.session.commit()
+
+        if quiz.start_time:
+            start_time = quiz.start_time.astimezone(ZoneInfo("Asia/Kolkata"))
+            unlock_quiz_task.apply_async((quiz.id,), eta=start_time)
+            print(f"Unlock task scheduled for quiz {quiz.name} with ID {quiz.id} at {start_time}")
+        
         return {
                 "id": quiz.id,
                 "name": quiz.name,

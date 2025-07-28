@@ -122,6 +122,7 @@ class Quiz(db.Model):
     start_time = db.Column(db.DateTime(), nullable=True)  # Date and Time when the quiz is scheduled
     end_time = db.Column(db.DateTime(), nullable=True)  # Date and Time when the quiz ends
     is_locked = db.Column(db.Boolean, nullable=False, default=False)  # Default flag indicates if the quiz is locked or not
+    is_unlocked_by_celery = db.Column(db.Boolean, nullable=True, default=False)
 
     created_at = db.Column(db.DateTime(), nullable=False, default=ist_now)
     updated_at = db.Column(db.DateTime(), nullable=True, default=None, onupdate=ist_now)

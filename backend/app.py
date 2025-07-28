@@ -39,10 +39,11 @@ celery.conf.beat_schedule = {
     },
     'send_daily_reminder_task': {
         'task': 'daily_reminder',
-        'schedule': crontab(minute='*/5'),  # Every 5 minutes
+        'schedule': crontab(hour=19, minute=30),  # Every day at 19:30
     }
 }
 # 30 # Every 30 seconds
+# crontab(minute='*/5'),  # Every 5 minutes
 # crontab(hour=4, minute=30)  # Every day at 4:30 AM
 
 from routes.user import UserRegister, UserLogin, qualificationList, checkUsername, checkEmail, userDetails
@@ -101,13 +102,6 @@ from routes.csv_export import UserAttemptsCSVExport, CSVExportStatus, CSVExportD
 api.add_resource(UserAttemptsCSVExport, '/csv-export/generate')
 api.add_resource(CSVExportStatus, '/csv-export/status')
 api.add_resource(CSVExportDownload, '/csv-export/download/<string:task_id>')  # localhost:5000/api/csv-export/download/<task_id>
-
-# @celery.on_after_finalize.connect 
-# def setup_periodic_tasks(sender, **kwargs):
-#     sender.add_periodic_task(
-#         crontab(minute = '*/2'),
-#         monthly_report.s(),
-#     )
 
 
 if __name__ == '__main__':

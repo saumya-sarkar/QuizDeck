@@ -36,27 +36,27 @@ with app.app_context():
     create_admin() # Create admin
 
     # tests = Question.query.filter(Question.question_statement.like('%Test%')).all()
-    tests = Question.query.filter(Question.id.in_(range(7,8))).all()
-    for test in tests:
-        db.session.delete(test)
-        db.session.commit()  # Commit changes to the database
-        print(f"Deleted test: {test.id}")
+    # tests = Question.query.filter(Question.id.in_(range(7,8))).all()
+    # for test in tests:
+    #     db.session.delete(test)
+    #     db.session.commit()  # Commit changes to the database
+    #     print(f"Deleted test: {test.id}")
 
     # Example of dropping a table (uncomment if needed)
     
     # # Define the table name you want to drop
     # table_name = 'quiz'
-    # # column_name = 'updated_at'
+    # column_name = 'is_unlocked_by_celery'
 
     # # Create a SQL DROP TABLE statement
     # drop_table = text(f"DROP TABLE IF EXISTS {table_name};")
 
-    # # sql_statement = text(f"ALTER TABLE {table_name} ADD COLUMN {column_name} DATETIME;")
-    # # sql_statement = text(f"ALTER TABLE {table_name} DROP COLUMN {column_name};")
+    # sql_statement = text(f"ALTER TABLE {table_name} ADD COLUMN {column_name} BOOLEAN;")
+    # sql_statement = text(f"ALTER TABLE {table_name} DROP COLUMN {column_name};")
 
     # # Execute the SQL statement
     # with db.engine.connect() as connection:
-    #     connection.execute(drop_table)
+    #     connection.execute(sql_statement)
 print("Database initialized and roles created.")
 
 

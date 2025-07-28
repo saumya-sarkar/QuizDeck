@@ -1,5 +1,5 @@
 from celery import shared_task
-from models import QuizAttempt, ist_format, User, Quiz
+from models import db, QuizAttempt, User, Quiz, ist_format
 from utils import format_report
 from mail import send_email
 from datetime import datetime, timedelta
@@ -168,7 +168,7 @@ def daily_reminder():
         for quiz in quizzes:
             if quiz.id not in attempted_quizzes and quiz.check_status() != "Ended":
                 quiz_string += f"🔵{quiz.name} -> 📌{quiz.check_status()}\n"
-                
+
         text = (
                     f"Hi {user.username} 👋\n"
                     f"You have some quizzes waiting for you:\n\n"
@@ -184,3 +184,25 @@ def daily_reminder():
             print(f"Failed to send daily reminder: {response.status_code} - {response.text}")
     # Return a message indicating success or failure
     return "Daily reminders sent."
+
+
+# Automatic Quiz Unlocking Task
+@shared_task(ignore_results = False, name = "unlock_quiz_task")
+def unlock_quiz_task(quiz_id):
+    quiz = Quiz.query.filter_by(id=quiz_id).first()
+   
+    if not quiz:
+        print(f"Quiz with ID {quiz_id} not found.")
+        return "Quiz not found."
+    
+    if quiz.quiz_type.value == "Practice":
+        return "Practice quizzes do not require unlocking."
+    
+    if quiz and quiz.is_locked and not quiz.is_unlocked_by_celery:
+        quiz.is_locked = False
+        quiz.is_unlocked_by_celery = True
+        db.session.commit()
+        print(f"Quiz {quiz.name} with ID {quiz.id} has been unlocked by Celery task.")
+    else:
+        print(f"Quiz with ID {quiz_id} is either not found or already unlocked.")
+    return f"Quiz unlock task completed."
