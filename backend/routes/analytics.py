@@ -128,56 +128,56 @@ class UserAnalytics(Resource):
                 Quiz.deleted == False
             ).group_by(Subject.name).all()
             
-            # Chart 2: Weekly Quiz Activity (Last 8 weeks)
-            weekly_activity = db.session.query(
-                func.strftime('%Y-W%W', QuizAttempt.started_at).label('week'),
-                func.count(QuizAttempt.id).label('attempts'),
-                func.avg(QuizAttempt.user_score * 100.0 / QuizAttempt.total_marks).label('avg_score')
-            ).filter(
-                QuizAttempt.user_id == user_id,
-                QuizAttempt.started_at >= start_date,
-                QuizAttempt.status.in_(['completed', 'auto_submitted']),
-                QuizAttempt.total_marks > 0
-            ).group_by(func.strftime('%Y-W%W', QuizAttempt.started_at)).all()
+            # # Chart 2: Weekly Quiz Activity (Last 8 weeks)
+            # weekly_activity = db.session.query(
+            #     func.strftime('%Y-W%W', QuizAttempt.started_at).label('week'),
+            #     func.count(QuizAttempt.id).label('attempts'),
+            #     func.avg(QuizAttempt.user_score * 100.0 / QuizAttempt.total_marks).label('avg_score')
+            # ).filter(
+            #     QuizAttempt.user_id == user_id,
+            #     QuizAttempt.started_at >= start_date,
+            #     QuizAttempt.status.in_(['completed', 'auto_submitted']),
+            #     QuizAttempt.total_marks > 0
+            # ).group_by(func.strftime('%Y-W%W', QuizAttempt.started_at)).all()
             
-            # Chart 3: Score Distribution
-            score_ranges = db.session.query(
-                func.case(
-                    (QuizAttempt.user_score * 100.0 / QuizAttempt.total_marks >= 90, '90-100%'),
-                    (QuizAttempt.user_score * 100.0 / QuizAttempt.total_marks >= 80, '80-89%'),
-                    (QuizAttempt.user_score * 100.0 / QuizAttempt.total_marks >= 70, '70-79%'),
-                    (QuizAttempt.user_score * 100.0 / QuizAttempt.total_marks >= 60, '60-69%'),
-                    (QuizAttempt.user_score * 100.0 / QuizAttempt.total_marks >= 50, '50-59%'),
-                    else_='Below 50%'
-                ).label('score_range'),
-                func.count(QuizAttempt.id).label('count')
-            ).filter(
-                QuizAttempt.user_id == user_id,
-                QuizAttempt.status.in_(['completed', 'auto_submitted']),
-                QuizAttempt.total_marks > 0
-            ).group_by(
-                func.case(
-                    (QuizAttempt.user_score * 100.0 / QuizAttempt.total_marks >= 90, '90-100%'),
-                    (QuizAttempt.user_score * 100.0 / QuizAttempt.total_marks >= 80, '80-89%'),
-                    (QuizAttempt.user_score * 100.0 / QuizAttempt.total_marks >= 70, '70-79%'),
-                    (QuizAttempt.user_score * 100.0 / QuizAttempt.total_marks >= 60, '60-69%'),
-                    (QuizAttempt.user_score * 100.0 / QuizAttempt.total_marks >= 50, '50-59%'),
-                    else_='Below 50%'
-                )
-            ).all()
+            # # Chart 3: Score Distribution
+            # score_ranges = db.session.query(
+            #     func.case(
+            #         (QuizAttempt.user_score * 100.0 / QuizAttempt.total_marks >= 90, '90-100%'),
+            #         (QuizAttempt.user_score * 100.0 / QuizAttempt.total_marks >= 80, '80-89%'),
+            #         (QuizAttempt.user_score * 100.0 / QuizAttempt.total_marks >= 70, '70-79%'),
+            #         (QuizAttempt.user_score * 100.0 / QuizAttempt.total_marks >= 60, '60-69%'),
+            #         (QuizAttempt.user_score * 100.0 / QuizAttempt.total_marks >= 50, '50-59%'),
+            #         else_='Below 50%'
+            #     ).label('score_range'),
+            #     func.count(QuizAttempt.id).label('count')
+            # ).filter(
+            #     QuizAttempt.user_id == user_id,
+            #     QuizAttempt.status.in_(['completed', 'auto_submitted']),
+            #     QuizAttempt.total_marks > 0
+            # ).group_by(
+            #     func.case(
+            #         (QuizAttempt.user_score * 100.0 / QuizAttempt.total_marks >= 90, '90-100%'),
+            #         (QuizAttempt.user_score * 100.0 / QuizAttempt.total_marks >= 80, '80-89%'),
+            #         (QuizAttempt.user_score * 100.0 / QuizAttempt.total_marks >= 70, '70-79%'),
+            #         (QuizAttempt.user_score * 100.0 / QuizAttempt.total_marks >= 60, '60-69%'),
+            #         (QuizAttempt.user_score * 100.0 / QuizAttempt.total_marks >= 50, '50-59%'),
+            #         else_='Below 50%'
+            #     )
+            # ).all()
             
-            # Chart 4: Recent Quiz Trends (Last 10 attempts)
-            recent_attempts = db.session.query(
-                Quiz.name.label('quiz_name'),
-                (QuizAttempt.user_score * 100.0 / QuizAttempt.total_marks).label('percentage'),
-                QuizAttempt.started_at
-            ).join(
-                Quiz, QuizAttempt.quiz_id == Quiz.id
-            ).filter(
-                QuizAttempt.user_id == user_id,
-                QuizAttempt.status.in_(['completed', 'auto_submitted']),
-                QuizAttempt.total_marks > 0
-            ).order_by(desc(QuizAttempt.started_at)).limit(10).all()
+            # # Chart 4: Recent Quiz Trends (Last 10 attempts)
+            # recent_attempts = db.session.query(
+            #     Quiz.name.label('quiz_name'),
+            #     (QuizAttempt.user_score * 100.0 / QuizAttempt.total_marks).label('percentage'),
+            #     QuizAttempt.started_at
+            # ).join(
+            #     Quiz, QuizAttempt.quiz_id == Quiz.id
+            # ).filter(
+            #     QuizAttempt.user_id == user_id,
+            #     QuizAttempt.status.in_(['completed', 'auto_submitted']),
+            #     QuizAttempt.total_marks > 0
+            # ).order_by(desc(QuizAttempt.started_at)).limit(10).all()
             
             return {
                 "code": 200,
@@ -190,26 +190,26 @@ class UserAnalytics(Resource):
                         }
                         for perf in subject_performance
                     ],
-                    "weekly_activity": [
-                        {
-                            "week": activity.week,
-                            "attempts": activity.attempts,
-                            "avg_score": round(activity.avg_score, 1) if activity.avg_score else 0
-                        }
-                        for activity in weekly_activity
-                    ],
-                    "score_distribution": [
-                        {"range": score.score_range, "count": score.count}
-                        for score in score_ranges
-                    ],
-                    "recent_trends": [
-                        {
-                            "quiz": attempt.quiz_name,
-                            "score": round(attempt.percentage, 1),
-                            "date": attempt.started_at.strftime('%Y-%m-%d')
-                        }
-                        for attempt in reversed(recent_attempts)
-                    ]
+                #     "weekly_activity": [
+                #         {
+                #             "week": activity.week,
+                #             "attempts": activity.attempts,
+                #             "avg_score": round(activity.avg_score, 1) if activity.avg_score else 0
+                #         }
+                #         for activity in weekly_activity
+                #     ],
+                #     "score_distribution": [
+                #         {"range": score.score_range, "count": score.count}
+                #         for score in score_ranges
+                #     ],
+                #     "recent_trends": [
+                #         {
+                #             "quiz": attempt.quiz_name,
+                #             "score": round(attempt.percentage, 1),
+                #             "date": attempt.started_at.strftime('%Y-%m-%d')
+                #         }
+                #         for attempt in reversed(recent_attempts)
+                #     ]
                 }
             }, 200
             

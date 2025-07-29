@@ -131,30 +131,6 @@ export default {
       ]
     };
   },
-  computed: {
-    // totalUsers() {
-    //   return this.analyticsData?.user_registrations?.reduce((sum, item) => sum + item.count, 0) || 0;
-    // },
-    // totalAttempts() {
-    //   return this.analyticsData?.subject_attempts?.reduce((sum, item) => sum + item.attempts, 0) || 0;
-    // },
-    // activeSubjects() {
-    //   return this.analyticsData?.subject_attempts?.length || 0;
-    // },
-    // platformAverage() {
-    //   const scores = this.analyticsData?.difficulty_scores || [];
-    //   const avg = scores.reduce((sum, item) => sum + item.avg_score, 0) / (scores.length || 1);
-    //   return Math.round(avg);
-    // },
-    // stats() {
-    //   return [
-    //     { label: 'Total Users', value: this.totalUsers, icon: 'users' },
-    //     { label: 'Total Quiz Attempts', value: this.totalAttempts, icon: 'clipboard-list' },
-    //     { label: 'Active Subjects', value: this.activeSubjects, icon: 'book' },
-    //     { label: 'Platform Average', value: `${this.platformAverage}%`, icon: 'chart-line' }
-    //   ];
-    // }
-  },
   async mounted() {
     await this.fetchAnalyticsData();
   },

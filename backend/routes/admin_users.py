@@ -1,4 +1,4 @@
-from flask_security import auth_required, roles_accepted
+from flask_security import auth_required, roles_accepted, current_user
 from flask_restful import Resource, reqparse
 from models import db, User, QuizAttempt, Subject, Chapter, Quiz, ist_format
 from sqlalchemy import desc
@@ -203,4 +203,29 @@ class AdminDashboardStats(Resource):
             "total_quizzes": total_quizzes,
             "total_chapters": total_chapters,
             "total_subjects": total_subjects
+        }, 200
+
+class UserDashboardStats(Resource):
+    @auth_required('token')
+    def get(self):
+        # This endpoint can be used to fetch overall user statistics
+        user_id = current_user.id
+        user = User.query.filter_by(id=user_id).first()
+        if not user:
+            return {"code": 404, "error_message": "User not found"}, 404
+        
+        username = user.username
+        totalQuizzesTaken = len(set(attempt.quiz_id for attempt in user.quiz_attempts))
+        totalScore = sum(attempt.user_score for attempt in user.quiz_attempts)
+        totalMarks = sum(attempt.total_marks for attempt in user.quiz_attempts)
+        averageScore = round((totalScore / totalMarks) * 100, 2) if totalMarks > 0 else 0
+        subjectsExplored = len(set(attempt.quiz.chapter.subject_id for attempt in user.quiz_attempts))
+        currentStreak = 7 # Placeholder for current streak logic, can be implemented later
+        return {
+            "code": 200,
+            "username": username,
+            "totalQuizzesTaken": totalQuizzesTaken,
+            "averageScore": averageScore,
+            "subjectsExplored": subjectsExplored,
+            "currentStreak": currentStreak
         }, 200

@@ -44,17 +44,34 @@ export default {
   },
   computed: {
     breadcrumbItems() {
-      // Always start with Dashboard as the root
-      const baseItems = [
+      const isAdmin = this.$store.getters['auth/isAdmin'];
+      if (isAdmin){
+        // Always start with Dashboard as the root
+        const baseItems = [
+          {
+            name: 'Dashboard',
+            path: '/admin',
+            icon: 'table-columns'
+          }
+        ];
+      
+        // Add the provided items
+        return [...baseItems, ...this.items];
+      } else if (!isAdmin){
+        const userId = this.$store.getters['auth/getUser'].id;
+        // Always start with Dashboard as the root
+        const baseItems = [
         {
           name: 'Dashboard',
-          path: '/admin',
+          path: `/user/${userId}`,
           icon: 'table-columns'
         }
-      ];
+        ];
       
-      // Add the provided items
-      return [...baseItems, ...this.items];
+        // Add the provided items
+        return [...baseItems, ...this.items];
+      }
+      
     }
   }
 };

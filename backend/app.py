@@ -105,11 +105,10 @@ api.add_resource(UserAnalytics, '/user/analytics')   # localhost:5000/api/user/a
 
 
 # Dashboard Stats API
-from routes.admin_users import AdminDashboardStats
+from routes.admin_users import AdminDashboardStats, UserDashboardStats
 
 api.add_resource(AdminDashboardStats, '/admin/dashboard/stats')
-
-
+api.add_resource(UserDashboardStats, '/user/dashboard/stats')
 
 from routes.csv_export import UserAttemptsCSVExport, CSVExportStatus, CSVExportDownload
 

@@ -106,10 +106,10 @@
               <div class="col-lg-3 col-md-6">
                 <button 
                   class="btn quick-action-btn w-100"
-                  @click="exportProgress"
+                  @click="viewReports"
                 >
-                  <font-awesome-icon icon="download" />
-                  <span>Export Progress</span>
+                  <font-awesome-icon icon="chart-line" />
+                  <span>View Reports</span>
                 </button>
               </div>
             </div>
@@ -225,19 +225,16 @@ export default {
 
       try {
         // Fetch user details
-        const userResponse = await axios.get(`${BASE_URL}/user-details`, {
+        const userResponse = await axios.get(`${BASE_URL}/user/dashboard/stats`, {
           headers: { 'Authorization': token }
         });
         
-        this.userName = userResponse.data.full_name || userResponse.data.username || 'Student';
-        
-        // For now, using mock data for dashboard stats
-        // You can replace these with actual API calls
-        this.totalQuizzesTaken = 15;
-        this.averageScore = 78;
-        this.subjectsExplored = 5;
-        this.currentStreak = 7;
-        
+        this.userName = userResponse.data.username;
+        this.totalQuizzesTaken = userResponse.data.totalQuizzesTaken;
+        this.averageScore = userResponse.data.averageScore;
+        this.subjectsExplored = userResponse.data.subjectsExplored;
+        this.currentStreak = userResponse.data.currentStreak || 7; // Default to 7 if not available
+
       } catch (error) {
         console.error('Error fetching user data:', error);
         // Use default values if API fails
@@ -307,7 +304,8 @@ export default {
     },
 
     takeQuiz() {
-      this.$router.push('/quizzes');
+      const userId = store.getters['auth/getUser'].id;
+      this.$router.push(`/user/${userId}/subjects`);
     },
 
     viewResults() {
@@ -315,13 +313,14 @@ export default {
       this.$router.push(`/user/${userId}/quiz-attempts`);
     },
 
-    exportProgress() {
-      console.log('Exporting progress...');
-      // Implement CSV export functionality
+    viewReports() {
+      const userId = store.getters['auth/getUser'].id;
+      this.$router.push(`/user/${userId}/analytics`);
     },
 
     startQuiz(quiz) {
-      this.$router.push(`/quiz/${quiz.id}`);
+      const userId = store.getters['auth/getUser'].id;
+      this.$router.push(`/user/${userId}/subjects`);
     }
   }
 };
