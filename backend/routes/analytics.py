@@ -106,110 +106,96 @@ class UserAnalytics(Resource):
         
         try:
             user_id = current_user.id
+
+            userAttempts = QuizAttempt.query.filter(
+                QuizAttempt.user_id == user_id,
+                QuizAttempt.status.in_(['completed', 'auto_submitted'])
+            ).order_by(desc(QuizAttempt.started_at)).all()
             
-            # Chart 1: User's Performance by Subject (Last 6 months)
-            end_date = datetime.now(ZoneInfo("Asia/Kolkata"))
-            start_date = end_date - timedelta(days=180)
+            # Chart 1: User Performance by Subject
             
-            subject_performance = db.session.query(
-                Subject.name.label('subject_name'),
-                func.avg(QuizAttempt.user_score * 100.0 / QuizAttempt.total_marks).label('avg_percentage'),
-                func.count(QuizAttempt.id).label('attempts')
-            ).join(
-                Quiz, Subject.id == Quiz.chapter_id
-            ).join(
-                QuizAttempt, Quiz.id == QuizAttempt.quiz_id
+            subject_performance = []
+            subjectSet = [subject.name for subject in Subject.query.filter(Subject.deleted == False).all()]
+            for subject in subjectSet:
+                user_score = sum(attempt.user_score for attempt in userAttempts if attempt.quiz.chapter.subject.name == subject)
+                total_marks = sum(attempt.total_marks for attempt in userAttempts if attempt.quiz.chapter.subject.name == subject)
+                avg_percentage = ((user_score / total_marks) * 100) if total_marks > 0 else 0
+                attempts = sum(1 for attempt in userAttempts if attempt.quiz.chapter.subject.name == subject)
+
+                subject_performance.append({
+                    "subject_name": subject,
+                    "avg_percentage": round(avg_percentage, 2),
+                    "attempts": attempts if attempts > 0 else 0
+                })
+            
+            # Chart 2: Weekly Quiz Activity (Last 8 weeks)
+            weekly_activity = db.session.query(
+                func.strftime('%Y-Week%W', QuizAttempt.started_at).label('week'),
+                func.count(QuizAttempt.id).label('attempts'),
+                func.avg(QuizAttempt.user_score * 100.0 / QuizAttempt.total_marks).label('avg_score')
             ).filter(
                 QuizAttempt.user_id == user_id,
-                QuizAttempt.started_at >= start_date,
-                QuizAttempt.status.in_(['completed', 'auto_submitted']),
-                QuizAttempt.total_marks > 0,
-                Subject.deleted == False,
-                Quiz.deleted == False
-            ).group_by(Subject.name).all()
-            
-            # # Chart 2: Weekly Quiz Activity (Last 8 weeks)
-            # weekly_activity = db.session.query(
-            #     func.strftime('%Y-W%W', QuizAttempt.started_at).label('week'),
-            #     func.count(QuizAttempt.id).label('attempts'),
-            #     func.avg(QuizAttempt.user_score * 100.0 / QuizAttempt.total_marks).label('avg_score')
-            # ).filter(
-            #     QuizAttempt.user_id == user_id,
-            #     QuizAttempt.started_at >= start_date,
-            #     QuizAttempt.status.in_(['completed', 'auto_submitted']),
-            #     QuizAttempt.total_marks > 0
-            # ).group_by(func.strftime('%Y-W%W', QuizAttempt.started_at)).all()
+                QuizAttempt.status.in_(['completed', 'auto_submitted'])
+            ).group_by(func.strftime('%Y-Week%W', QuizAttempt.started_at)).all()
             
             # # Chart 3: Score Distribution
-            # score_ranges = db.session.query(
-            #     func.case(
-            #         (QuizAttempt.user_score * 100.0 / QuizAttempt.total_marks >= 90, '90-100%'),
-            #         (QuizAttempt.user_score * 100.0 / QuizAttempt.total_marks >= 80, '80-89%'),
-            #         (QuizAttempt.user_score * 100.0 / QuizAttempt.total_marks >= 70, '70-79%'),
-            #         (QuizAttempt.user_score * 100.0 / QuizAttempt.total_marks >= 60, '60-69%'),
-            #         (QuizAttempt.user_score * 100.0 / QuizAttempt.total_marks >= 50, '50-59%'),
-            #         else_='Below 50%'
-            #     ).label('score_range'),
-            #     func.count(QuizAttempt.id).label('count')
-            # ).filter(
-            #     QuizAttempt.user_id == user_id,
-            #     QuizAttempt.status.in_(['completed', 'auto_submitted']),
-            #     QuizAttempt.total_marks > 0
-            # ).group_by(
-            #     func.case(
-            #         (QuizAttempt.user_score * 100.0 / QuizAttempt.total_marks >= 90, '90-100%'),
-            #         (QuizAttempt.user_score * 100.0 / QuizAttempt.total_marks >= 80, '80-89%'),
-            #         (QuizAttempt.user_score * 100.0 / QuizAttempt.total_marks >= 70, '70-79%'),
-            #         (QuizAttempt.user_score * 100.0 / QuizAttempt.total_marks >= 60, '60-69%'),
-            #         (QuizAttempt.user_score * 100.0 / QuizAttempt.total_marks >= 50, '50-59%'),
-            #         else_='Below 50%'
-            #     )
-            # ).all()
-            
-            # # Chart 4: Recent Quiz Trends (Last 10 attempts)
-            # recent_attempts = db.session.query(
-            #     Quiz.name.label('quiz_name'),
-            #     (QuizAttempt.user_score * 100.0 / QuizAttempt.total_marks).label('percentage'),
-            #     QuizAttempt.started_at
-            # ).join(
-            #     Quiz, QuizAttempt.quiz_id == Quiz.id
-            # ).filter(
-            #     QuizAttempt.user_id == user_id,
-            #     QuizAttempt.status.in_(['completed', 'auto_submitted']),
-            #     QuizAttempt.total_marks > 0
-            # ).order_by(desc(QuizAttempt.started_at)).limit(10).all()
+            score_dict = {
+                "90-100%": 0,
+                "80-89%": 0,
+                "70-79%": 0,
+                "60-69%": 0,
+                "50-59%": 0,
+                "Below 50%": 0
+            }
+            for attempt in userAttempts:
+                score = attempt.user_score * 100.0 / attempt.total_marks if attempt.total_marks > 0 else 0
+                if score >= 90:
+                    score_dict["90-100%"] += 1
+                elif score >= 80:
+                    score_dict["80-89%"] += 1
+                elif score >= 70:
+                    score_dict["70-79%"] += 1
+                elif score >= 60:
+                    score_dict["60-69%"] += 1
+                elif score >= 50:
+                    score_dict["50-59%"] += 1
+                else:
+                    score_dict["Below 50%"] += 1
+
+            score_distribution = [
+                {"range": score_range, "count": count}
+                for score_range, count in score_dict.items()
+            ]
+
+            # Chart 4: Recent Quiz Trends (Last 10 attempts)
+            recent_trends = []
+            recent_attempts = userAttempts[:10]  # Get the last 10 attempts
+            for attempt in recent_attempts:
+                score_percentage = (attempt.user_score * 100.0 / attempt.total_marks) if attempt.total_marks > 0 else 0
+                quiz_name = attempt.quiz.name
+                attempt_date = attempt.started_at.strftime('%Y-%m-%d')
+                recent_trends.append({
+                    "quiz": quiz_name,
+                    "score": round(score_percentage, 2),
+                    "date": attempt_date
+                })
+
+            recent_trends.reverse()  # Reverse to show the most recent first
             
             return {
                 "code": 200,
                 "data": {
-                    "subject_performance": [
+                    "subject_performance": subject_performance,
+                    "weekly_activity": [
                         {
-                            "subject": perf.subject_name,
-                            "avg_score": round(perf.avg_percentage, 1),
-                            "attempts": perf.attempts
+                            "week": activity.week,
+                            "attempts": activity.attempts,
+                            "avg_score": round(activity.avg_score, 1) if activity.avg_score else 0
                         }
-                        for perf in subject_performance
+                        for activity in weekly_activity
                     ],
-                #     "weekly_activity": [
-                #         {
-                #             "week": activity.week,
-                #             "attempts": activity.attempts,
-                #             "avg_score": round(activity.avg_score, 1) if activity.avg_score else 0
-                #         }
-                #         for activity in weekly_activity
-                #     ],
-                #     "score_distribution": [
-                #         {"range": score.score_range, "count": score.count}
-                #         for score in score_ranges
-                #     ],
-                #     "recent_trends": [
-                #         {
-                #             "quiz": attempt.quiz_name,
-                #             "score": round(attempt.percentage, 1),
-                #             "date": attempt.started_at.strftime('%Y-%m-%d')
-                #         }
-                #         for attempt in reversed(recent_attempts)
-                #     ]
+                    "score_distribution": score_distribution,
+                    "recent_trends": recent_trends
                 }
             }, 200
             

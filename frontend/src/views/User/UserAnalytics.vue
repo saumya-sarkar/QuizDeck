@@ -61,31 +61,31 @@
           <div class="col-lg-6">
             <div class="chart-card">
               <div class="chart-container">
-                <SubjectPerformanceChart :subject-performance="analyticsData.subject_performance" />
-              </div>
-            </div>
-          </div>
-          <!-- <div class="col-lg-6">
-            <div class="chart-card">
-              <div class="chart-container">
-                <WeeklyActivityChart :weekly-activity="analyticsData.weekly_activity" />
+                <SubjectPerformanceChart :subjectPerformance="analyticsData.subject_performance" />
               </div>
             </div>
           </div>
           <div class="col-lg-6">
             <div class="chart-card">
               <div class="chart-container">
-                <ScoreDistributionChart :score-distribution="analyticsData.score_distribution" />
+                <WeeklyActivityChart :weeklyActivity="analyticsData.weekly_activity" />
               </div>
             </div>
           </div>
           <div class="col-lg-6">
             <div class="chart-card">
               <div class="chart-container">
-                <RecentTrendsChart :recent-trends="analyticsData.recent_trends" />
+                <ScoreDistributionChart :scoreDistribution="analyticsData.score_distribution" />
               </div>
             </div>
-          </div> -->
+          </div>
+          <div class="col-lg-6">
+            <div class="chart-card">
+              <div class="chart-container">
+                <RecentTrendsChart :recentTrends="analyticsData.recent_trends" />
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -102,9 +102,9 @@ import { useToast } from 'vue-toastification';
 
 // Chart Components
 import SubjectPerformanceChart from '@/components/User/charts/SubjectPerformanceChart.vue';
-// import WeeklyActivityChart from '@/components/User/charts/WeeklyActivityChart.vue';
-// import ScoreDistributionChart from '@/components/User/charts/ScoreDistributionChart.vue';
-// import RecentTrendsChart from '@/components/User/charts/RecentTrendsChart.vue';
+import WeeklyActivityChart from '@/components/User/charts/WeeklyActivityChart.vue';
+import ScoreDistributionChart from '@/components/User/charts/ScoreDistributionChart.vue';
+import RecentTrendsChart from '@/components/User/charts/RecentTrendsChart.vue';
 
 export default {
   name: 'UserAnalytics',
@@ -112,9 +112,9 @@ export default {
     Navbar,
     Breadcrumb,
     SubjectPerformanceChart,
-    // WeeklyActivityChart,
-    // ScoreDistributionChart,
-    // RecentTrendsChart
+    WeeklyActivityChart,
+    ScoreDistributionChart,
+    RecentTrendsChart
   },
   data() {
     return {
@@ -124,22 +124,22 @@ export default {
       breadcrumbItems: [{ name: 'My Analytics', icon: 'chart-bar' }]
     };
   },
-  computed: {
-    statCards() {
-      const subjectPerformance = this.analyticsData?.subject_performance || [];
-      const totalAttempts = subjectPerformance.reduce((sum, item) => sum + item.attempts, 0);
-      const avgScore = subjectPerformance.length
-        ? Math.round(subjectPerformance.reduce((sum, item) => sum + item.avg_score, 0) / subjectPerformance.length)
-        : 0;
+  // computed: {
+  //   statCards() {
+  //     const subjectPerformance = this.analyticsData?.subject_performance || [];
+  //     const totalAttempts = subjectPerformance.reduce((sum, item) => sum + item.attempts, 0);
+  //     const avgScore = subjectPerformance.length
+  //       ? Math.round(subjectPerformance.reduce((sum, item) => sum + item.avg_score, 0) / subjectPerformance.length)
+  //       : 0;
 
-      return [
-        { icon: 'clipboard-check', label: 'Total Attempts', value: totalAttempts },
-        { icon: 'trophy', label: 'Overall Average', value: `${avgScore}%` },
-        { icon: 'book', label: 'Subjects Attempted', value: subjectPerformance.length },
-        { icon: 'chart-line', label: 'Recent Quizzes', value: this.analyticsData?.recent_trends?.length || 0 }
-      ];
-    }
-  },
+  //     return [
+  //       { icon: 'clipboard-check', label: 'Total Attempts', value: totalAttempts },
+  //       { icon: 'trophy', label: 'Overall Average', value: `${avgScore}%` },
+  //       { icon: 'book', label: 'Subjects Attempted', value: subjectPerformance.length },
+  //       { icon: 'chart-line', label: 'Recent Quizzes', value: this.analyticsData?.recent_trends?.length || 0 }
+  //     ];
+  //   }
+  // },
   async mounted() {
     await this.fetchAnalyticsData();
   },

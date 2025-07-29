@@ -1,74 +1,125 @@
 <template>
-  <Radar :data="chartData" :options="chartOptions" />
+  <Bar :data="chartData" :options="chartOptions" />
 </template>
 
 <script>
-import { Radar } from 'vue-chartjs';
+import { Bar } from 'vue-chartjs'
+import {
+  Chart as ChartJS,
+  Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale
+} from 'chart.js'
+
+// Register Chart.js components
+ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale)
 
 export default {
   name: 'SubjectPerformanceChart',
-  components: { Radar },
-  props: {
-    subjectPerformance: {
-      type: Array,
-      required: true
-    }
+  components: {
+    Bar
   },
-  data() {
-    return {
-      chartData: {
-        labels: [],
-        datasets: []
-      },
-      chartOptions: {
+  props: {
+    subjectPerformance: Array
+  },
+  computed: {
+    chartData() {
+      const labels = this.subjectPerformance.map(item => item.subject_name)
+      const attempts = this.subjectPerformance.map(item => item.attempts)
+      const avgPercentages = this.subjectPerformance.map(item => item.avg_percentage)
+
+      return {
+        labels,
+        datasets: [
+          {
+            label: 'Attempts',
+            data: attempts,
+            backgroundColor: 'rgba(255, 99, 132, 0.6)',
+            borderColor: 'rgba(255, 99, 132, 1)',
+            borderWidth: 1,
+            yAxisID: 'y'
+          },
+          {
+            label: 'Average Percentage',
+            data: avgPercentages,
+            backgroundColor: 'rgba(54, 162, 235, 0.6)',
+            borderColor: 'rgba(54, 162, 235, 1)',
+            borderWidth: 1,
+            yAxisID: 'y1'
+          }
+        ]
+      }
+    },
+    chartOptions() {
+      return {
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
           title: {
             display: true,
-            text: 'Performance by Subject (Last 6 Months)',
+            text: 'Subject-wise Attempts and Average Percentage',
             color: '#ffffff',
-            font: { size: 16, weight: 'bold' }
+            font: {
+              size: 16,
+              weight: 'bold'
+            }
           },
-          legend: { display: false }
+          legend: {
+            labels: {
+              color: '#ffffff'
+            }
+          },
+          tooltip: {
+            mode: 'index',
+            intersect: false
+          }
         },
         scales: {
-          r: {
+          x: {
+            ticks: {
+              color: '#ffffff'
+            },
+            grid: {
+              display: false,
+              color: 'rgba(255,255,255,0.1)'
+            }
+          },
+          y: {
+            type: 'linear',
+            position: 'left',
+            beginAtZero: true,
+            title: {
+              display: false, // Hide title for attempts axis
+              text: 'Attempts',
+              color: '#ffffff'
+            },
+            ticks: {
+              color: '#ffffff'
+            },
+            grid: {
+              display: false,
+              color: 'rgba(255,255,255,0.1)'
+            }
+          },
+          y1: {
+            type: 'linear',
+            position: 'right',
             beginAtZero: true,
             max: 100,
+            title: {
+              display: false, // Hide title for average percentage axis,
+              text: 'Avgerage Percentage',
+              color: '#ffffff'
+            },
             ticks: {
               color: '#ffffff',
               callback: value => value + '%'
             },
             grid: {
-              color: 'rgba(255,255,255,0.2)'
-            },
-            angleLines: {
-              color: 'rgba(255,255,255,0.2)'
-            },
-            pointLabels: {
-              color: '#ffffff'
+              drawOnChartArea: false // prevent grid overlap
             }
           }
         }
       }
-    };
-  },
-  mounted() {
-    const labels = this.subjectPerformance.map(item => item.subject);
-    const scores = this.subjectPerformance.map(item => item.avg_score);
-    this.chartData.labels = labels;
-    this.chartData.datasets = [{
-      label: 'Average Score (%)',
-      data: scores,
-      borderColor: 'rgba(54, 162, 235, 1)',
-      backgroundColor: 'rgba(54, 162, 235, 0.2)',
-      borderWidth: 3,
-      pointBackgroundColor: 'rgba(54, 162, 235, 1)',
-      pointBorderColor: '#fff',
-      pointBorderWidth: 2,
-      pointRadius: 6
-    }];
+    }
   }
-};
+}
 </script>

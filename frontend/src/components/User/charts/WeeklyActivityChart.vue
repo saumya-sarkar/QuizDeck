@@ -4,6 +4,12 @@
 
 <script>
 import { Line } from 'vue-chartjs';
+import {
+  Chart as ChartJS,
+  Title, Tooltip, Legend, LineElement, CategoryScale, LinearScale, PointElement
+} from 'chart.js';
+
+ChartJS.register(Title, Tooltip, Legend, LineElement, CategoryScale, LinearScale, PointElement);
 
 export default {
   name: 'WeeklyActivityChart',
@@ -36,55 +42,80 @@ export default {
           }
         },
         scales: {
+          x: {
+            ticks: { color: '#ffffff' },
+            grid: { color: 'rgba(255,255,255,0.1)' }
+          },
           y: {
-            title: { display: true, text: 'Quiz Attempts', color: '#ffffff' },
+            position: 'left',
+            beginAtZero: true,
+            title: {
+              display: true,
+              text: 'Quiz Attempts',
+              color: '#ffffff'
+            },
             ticks: { color: '#ffffff' },
             grid: { color: 'rgba(255,255,255,0.1)' }
           },
           y1: {
             position: 'right',
-            min: 0,
+            beginAtZero: true,
             max: 100,
-            title: { display: true, text: 'Average Score (%)', color: '#ffffff' },
-            grid: { drawOnChartArea: false },
-            ticks: { color: '#ffffff' }
-          },
-          x: {
-            ticks: { color: '#ffffff' },
-            grid: { color: 'rgba(255,255,255,0.1)' }
+            title: {
+              display: true,
+              text: 'Average Score (%)',
+              color: '#ffffff'
+            },
+            ticks: {
+              color: '#ffffff',
+              callback: val => `${val}%`
+            },
+            grid: {
+              drawOnChartArea: false
+            }
           }
         }
       }
     };
   },
-  mounted() {
-    const weeks = this.weeklyActivity.map(item => `Week ${item.week.split('-W')[1]}`);
-    const attempts = this.weeklyActivity.map(item => item.attempts);
-    const avgScores = this.weeklyActivity.map(item => item.avg_score);
+  watch: {
+    weeklyActivity: {
+      immediate: true,
+      handler(newVal) {
+        if (!newVal || newVal.length === 0) return;
 
-    this.chartData.labels = weeks;
-    this.chartData.datasets = [
-      {
-        label: 'Quiz Attempts',
-        data: attempts,
-        borderColor: 'rgba(75, 192, 192, 1)',
-        backgroundColor: 'rgba(75, 192, 192, 0.1)',
-        borderWidth: 3,
-        fill: true,
-        tension: 0.4,
-        yAxisID: 'y'
-      },
-      {
-        label: 'Average Score (%)',
-        data: avgScores,
-        borderColor: 'rgba(255, 99, 132, 1)',
-        backgroundColor: 'rgba(255, 99, 132, 0.1)',
-        borderWidth: 3,
-        fill: false,
-        tension: 0.4,
-        yAxisID: 'y1'
+        const weeks = newVal.map(item => `Week ${item.week.split('-Week')[1]}`);
+        const attempts = newVal.map(item => item.attempts);
+        const avgScores = newVal.map(item => item.avg_score);
+
+        this.chartData = {
+          labels: weeks,
+          datasets: [
+            {
+              label: 'Quiz Attempts',
+              data: attempts,
+              borderColor: 'rgba(75, 192, 192, 1)',
+              backgroundColor: 'rgba(75, 192, 192, 0.1)',
+              borderWidth: 3,
+              fill: true,
+              tension: 0.4,
+              yAxisID: 'y'
+            },
+            {
+              label: 'Average Score (%)',
+              data: avgScores,
+              borderColor: 'rgba(255, 99, 132, 1)',
+              backgroundColor: 'rgba(255, 99, 132, 0.1)',
+              borderWidth: 3,
+              fill: false,
+              tension: 0.4,
+              yAxisID: 'y1'
+            }
+          ]
+        };
       }
-    ];
+    }
   }
 };
 </script>
+
