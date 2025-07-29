@@ -7,6 +7,7 @@ from celery import Celery
 from celery_init import celery_init_app
 from celery.schedules import crontab
 from tasks import generate_admin_report, monthly_report, daily_reminder
+from caching import cache
 
 
 
@@ -25,6 +26,8 @@ def create_app():
     CORS(init_app)
 
     init_api = Api(init_app, prefix='/api')
+
+    cache.init_app(init_app)
     
     return init_app, init_api
 

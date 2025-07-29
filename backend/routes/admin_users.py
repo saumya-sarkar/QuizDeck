@@ -3,6 +3,7 @@ from flask_restful import Resource, reqparse
 from models import db, User, QuizAttempt, Subject, Chapter, Quiz, ist_format
 from sqlalchemy import desc
 from collections import defaultdict
+from caching import cache
 
 user_read_fields = reqparse.RequestParser()
 user_read_fields.add_argument('id', type=int, required=True, location='json')
@@ -188,6 +189,7 @@ class ToggleUserStatus(Resource):
 class AdminDashboardStats(Resource):
     @auth_required('token')
     @roles_accepted('admin')
+    @cache.cached(timeout=30, key_prefix='admin_dashboard_stats')
     def get(self):
         # This endpoint can be used to fetch overall admin statistics
         total_users = User.query.filter(User.roles.any(name='user')).filter_by(active=True).count()

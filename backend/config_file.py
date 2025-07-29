@@ -15,6 +15,12 @@ class localDev(Config):
     SECURITY_LOGIN_URL = os.getenv("SECURITY_LOGIN_URL")
     SECURITY_TOKEN_AUTHENTICATION_HEADER = os.getenv("SECURITY_TOKEN_AUTHENTICATION_HEADER")
 
+    CACHE_TYPE = 'RedisCache'
+    CACHE_REDIS_HOST = 'localhost'
+    CACHE_REDIS_PORT = 6379
+    CACHE_REDIS_DB = 2
+    CACHE_DEFAULT_TIMEOUT = 60 #in seconds
+
     UPLOAD_FOLDER = os.path.join(
         os.path.abspath(os.path.dirname(__file__)),
         os.getenv("UPLOAD_FOLDER", "static/uploads")
