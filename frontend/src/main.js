@@ -33,7 +33,8 @@ import {
   faUserCheck,
   faEnvelope,
   faUserTimes,
-  faSyncAlt
+  faSyncAlt,
+  faChartBar
 } from '@fortawesome/free-solid-svg-icons';
 
 // Import brand icons for social media
@@ -97,6 +98,7 @@ library.add(
   faEnvelope,
   faUserTimes,
   faSyncAlt,
+  faChartBar,
   // Brand icons
   faFacebookF,
   faTwitter,
@@ -110,6 +112,37 @@ const app = createApp(App);
 // Register Font Awesome icon component globally
 // This allows you to use <font-awesome-icon> in your templates
 app.component('font-awesome-icon', FontAwesomeIcon);
+
+
+// Chart.js registration
+import {
+  Chart as ChartJS,
+  Title,
+  Tooltip,
+  Legend,
+  ArcElement,
+  LineElement,
+  BarElement,
+  PointElement,
+  CategoryScale,
+  LinearScale,
+  TimeScale
+} from 'chart.js'
+
+// Register Chart.js components once for global use
+ChartJS.register(
+  Title,
+  Tooltip,
+  Legend,
+  ArcElement,
+  LineElement,
+  BarElement,
+  PointElement,
+  CategoryScale,
+  LinearScale,
+  TimeScale
+)
+
 
 app.use(store);
 app.use(router);

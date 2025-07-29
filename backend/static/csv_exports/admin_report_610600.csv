@@ -1,0 +1,15 @@
+Sr No,Attempt ID,User ID,Username,Email,Quiz ID,Quiz Name,Quiz Difficulty,Quiz Type,Chapter,Subject,Started At,Submitted At,Time Taken,User Score,Total Marks,Percentage,Result Status,Submission Status
+1,14,4,Lisa,lisa@quizdeck.com,4,Sound Waves Practice 1,Easy,Practice,Sound Waves,Physics,2025-07-26 04:02:31,2025-07-26 04:06:35,00:02:01,0.0,32.0,0.0,Needs Improvement,auto_submitted
+2,13,4,Lisa,lisa@quizdeck.com,4,Sound Waves Practice 1,Easy,Practice,Sound Waves,Physics,2025-07-26 03:57:51,2025-07-26 03:58:18,00:00:27,15.0,32.0,46.88,Needs Improvement,completed
+3,12,4,Lisa,lisa@quizdeck.com,4,Sound Waves Practice 1,Easy,Practice,Sound Waves,Physics,2025-07-25 21:43:02,2025-07-25 21:45:04,00:02:00,27.0,32.0,84.38,Excellent,auto_submitted
+4,11,3,Adam,adam@quizdeck.com,4,Sound Waves Practice 1,Easy,Practice,Sound Waves,Physics,2025-07-25 19:00:07,2025-07-25 19:00:59,00:00:52,5.0,32.0,15.62,Needs Improvement,completed
+5,10,3,Adam,adam@quizdeck.com,4,Sound Waves Practice 1,Easy,Practice,Sound Waves,Physics,2025-07-25 04:10:54,2025-07-25 04:16:10,00:05:12,5.0,32.0,15.62,Needs Improvement,completed
+6,9,3,Adam,adam@quizdeck.com,4,Sound Waves Practice 1,Easy,Practice,Sound Waves,Physics,2025-07-25 01:29:18,2025-07-25 01:32:25,00:03:07,0.0,32.0,0.0,Needs Improvement,completed
+7,8,3,Adam,adam@quizdeck.com,4,Sound Waves Practice 1,Easy,Practice,Sound Waves,Physics,2025-07-25 01:16:42,2025-07-25 01:17:33,00:00:00,5.0,32.0,15.62,Needs Improvement,completed
+8,7,3,Adam,adam@quizdeck.com,4,Sound Waves Practice 1,Easy,Practice,Sound Waves,Physics,2025-07-25 01:01:07,2025-07-25 01:05:00,00:00:00,0.0,32.0,0.0,Needs Improvement,completed
+9,6,3,Adam,adam@quizdeck.com,4,Sound Waves Practice 1,Easy,Practice,Sound Waves,Physics,2025-07-25 00:54:37,2025-07-25 00:55:27,00:00:00,17.0,32.0,53.12,Average,completed
+10,5,3,Adam,adam@quizdeck.com,4,Sound Waves Practice 1,Easy,Practice,Sound Waves,Physics,2025-07-25 00:38:29,2025-07-25 00:39:00,00:00:00,5.0,32.0,15.62,Needs Improvement,completed
+11,4,3,Adam,adam@quizdeck.com,4,Sound Waves Practice 1,Easy,Practice,Sound Waves,Physics,2025-07-25 00:08:56,2025-07-25 00:11:41,00:00:00,22.0,32.0,68.75,Good,completed
+12,3,3,Adam,adam@quizdeck.com,4,Sound Waves Practice 1,Easy,Practice,Sound Waves,Physics,2025-07-24 22:03:40,2025-07-24 22:09:55,00:04:34,0.0,32.0,0.0,Needs Improvement,auto_submitted
+13,2,3,Adam,adam@quizdeck.com,4,Sound Waves Practice 1,Easy,Practice,Sound Waves,Physics,2025-07-24 18:32:06,2025-07-24 18:36:57,00:02:53,10.0,32.0,31.25,Needs Improvement,auto_submitted
+14,1,3,Adam,adam@quizdeck.com,4,Sound Waves Practice 1,Easy,Practice,Sound Waves,Physics,2025-07-24 18:06:33,2025-07-24 18:16:00,00:08:41,12.0,32.0,37.5,Needs Improvement,auto_submitted

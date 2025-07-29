@@ -2,9 +2,9 @@
   <div class="analytics-container">
     <Navbar />
     <div class="container-fluid py-4">
-      <!-- Breadcrumb Navigation -->
+      <!-- Breadcrumb -->
       <Breadcrumb :items="breadcrumbItems" />
-      
+
       <!-- Header -->
       <div class="row mb-4">
         <div class="col-12">
@@ -23,7 +23,7 @@
         </div>
       </div>
 
-      <!-- Loading State -->
+      <!-- Loading -->
       <div v-if="loading" class="d-flex justify-content-center align-items-center" style="min-height: 400px;">
         <div class="text-center">
           <div class="spinner-border text-white mb-3" style="width: 3rem; height: 3rem;"></div>
@@ -31,7 +31,7 @@
         </div>
       </div>
 
-      <!-- Error State -->
+      <!-- Error -->
       <div v-else-if="error" class="alert alert-danger glass-alert" role="alert">
         <h4 class="alert-heading">Error Loading Analytics</h4>
         <p>{{ error }}</p>
@@ -41,90 +41,50 @@
         </button>
       </div>
 
-      <!-- Analytics Content -->
+      <!-- Data -->
       <div v-else>
-        <!-- Summary Stats -->
-        <div class="row g-4 mb-4">
-          <div class="col-md-3">
+        <!-- Summary Cards -->
+        <!-- <div class="row g-4 mb-4">
+          <div class="col-md-3" v-for="(stat, index) in stats" :key="index">
             <div class="stat-card">
               <div class="stat-icon">
-                <font-awesome-icon icon="users" />
+                <font-awesome-icon :icon="stat.icon" />
               </div>
               <div class="stat-content">
-                <h3>{{ totalUsers }}</h3>
-                <p>Total Users</p>
+                <h3>{{ stat.value }}</h3>
+                <p>{{ stat.label }}</p>
               </div>
             </div>
           </div>
-          <div class="col-md-3">
-            <div class="stat-card">
-              <div class="stat-icon">
-                <font-awesome-icon icon="clipboard-list" />
-              </div>
-              <div class="stat-content">
-                <h3>{{ totalAttempts }}</h3>
-                <p>Total Quiz Attempts</p>
-              </div>
-            </div>
-          </div>
-          <div class="col-md-3">
-            <div class="stat-card">
-              <div class="stat-icon">
-                <font-awesome-icon icon="book" />
-              </div>
-              <div class="stat-content">
-                <h3>{{ activeSubjects }}</h3>
-                <p>Active Subjects</p>
-              </div>
-            </div>
-          </div>
-          <div class="col-md-3">
-            <div class="stat-card">
-              <div class="stat-icon">
-                <font-awesome-icon icon="chart-line" />
-              </div>
-              <div class="stat-content">
-                <h3>{{ platformAverage }}%</h3>
-                <p>Platform Average</p>
-              </div>
-            </div>
-          </div>
-        </div>
+        </div> -->
 
-        <!-- Charts Grid -->
+        <!-- Chart Grid -->
         <div class="row g-4">
-          <!-- Chart 1: User Registrations -->
           <div class="col-lg-6">
             <div class="chart-card">
               <div class="chart-container">
-                <canvas ref="userRegistrationsChart"></canvas>
+                <TotalAttemptsbyUser :userAttempts="analyticsData.user_attempts" />
               </div>
             </div>
           </div>
-
-          <!-- Chart 2: Subject Attempts -->
           <div class="col-lg-6">
             <div class="chart-card">
               <div class="chart-container">
-                <canvas ref="subjectAttemptsChart"></canvas>
+                <SubjectAttemptsChart :subjectAttempts="analyticsData.subject_attempts" />
               </div>
             </div>
           </div>
-
-          <!-- Chart 3: Difficulty Scores -->
           <div class="col-lg-6">
             <div class="chart-card">
               <div class="chart-container">
-                <canvas ref="difficultyScoresChart"></canvas>
+                <DifficultyScoresChart :scores="analyticsData.difficulty_scores" />
               </div>
             </div>
           </div>
-
-          <!-- Chart 4: Monthly Activity -->
           <div class="col-lg-6">
             <div class="chart-card">
               <div class="chart-container">
-                <canvas ref="monthlyActivityChart"></canvas>
+                <MonthlyActivityChart :activity="analyticsData.monthly_activity" />
               </div>
             </div>
           </div>
@@ -141,20 +101,28 @@ import axios from 'axios';
 import BASE_URL from '@/config/apiConfig';
 import store from '@/store';
 import { useToast } from 'vue-toastification';
-import * as Chart from 'chart.js';
+
+// Chart components
+import TotalAttemptsbyUser from '@/components/Admin/charts/TotalAttemptsbyUser.vue';
+import SubjectAttemptsChart from '@/components/Admin/charts/SubjectAttemptsChart.vue';
+import DifficultyScoresChart from '@/components/Admin/charts/DifficultyScoresChart.vue';
+import MonthlyActivityChart from '@/components/Admin/charts/MonthlyActivityChart.vue';
 
 export default {
   name: 'AdminAnalytics',
   components: {
     Navbar,
-    Breadcrumb
+    Breadcrumb,
+    TotalAttemptsbyUser,
+    SubjectAttemptsChart,
+    DifficultyScoresChart,
+    MonthlyActivityChart
   },
   data() {
     return {
       analyticsData: null,
       loading: true,
       error: null,
-      charts: {},
       breadcrumbItems: [
         {
           name: 'Analytics',
@@ -164,305 +132,61 @@ export default {
     };
   },
   computed: {
-    totalUsers() {
-      return this.analyticsData?.user_registrations?.reduce((sum, item) => sum + item.count, 0) || 0;
-    },
-    totalAttempts() {
-      return this.analyticsData?.subject_attempts?.reduce((sum, item) => sum + item.attempts, 0) || 0;
-    },
-    activeSubjects() {
-      return this.analyticsData?.subject_attempts?.length || 0;
-    },
-    platformAverage() {
-      if (!this.analyticsData?.difficulty_scores?.length) return 0;
-      const avg = this.analyticsData.difficulty_scores.reduce((sum, item) => sum + item.avg_score, 0) / this.analyticsData.difficulty_scores.length;
-      return Math.round(avg);
-    }
+    // totalUsers() {
+    //   return this.analyticsData?.user_registrations?.reduce((sum, item) => sum + item.count, 0) || 0;
+    // },
+    // totalAttempts() {
+    //   return this.analyticsData?.subject_attempts?.reduce((sum, item) => sum + item.attempts, 0) || 0;
+    // },
+    // activeSubjects() {
+    //   return this.analyticsData?.subject_attempts?.length || 0;
+    // },
+    // platformAverage() {
+    //   const scores = this.analyticsData?.difficulty_scores || [];
+    //   const avg = scores.reduce((sum, item) => sum + item.avg_score, 0) / (scores.length || 1);
+    //   return Math.round(avg);
+    // },
+    // stats() {
+    //   return [
+    //     { label: 'Total Users', value: this.totalUsers, icon: 'users' },
+    //     { label: 'Total Quiz Attempts', value: this.totalAttempts, icon: 'clipboard-list' },
+    //     { label: 'Active Subjects', value: this.activeSubjects, icon: 'book' },
+    //     { label: 'Platform Average', value: `${this.platformAverage}%`, icon: 'chart-line' }
+    //   ];
+    // }
   },
   async mounted() {
     await this.fetchAnalyticsData();
-  },
-  beforeUnmount() {
-    // Cleanup charts
-    Object.values(this.charts).forEach(chart => {
-      if (chart) chart.destroy();
-    });
   },
   methods: {
     async fetchAnalyticsData() {
       this.loading = true;
       this.error = null;
-      
+
       try {
         const token = sessionStorage.getItem('access_token');
-        
+
         if (!token) {
           store.dispatch('auth/logoutUser');
           return;
         }
 
         const response = await axios.get(`${BASE_URL}/admin/analytics`, {
-          headers: { 'Authorization': token }
+          headers: { Authorization: token }
         });
-        
+
         if (response.data.code === 200) {
           this.analyticsData = response.data.data;
-          this.$nextTick(() => {
-            this.createCharts();
-          });
         } else {
           throw new Error(response.data.error_message || 'Failed to fetch analytics data');
         }
       } catch (err) {
-        console.error('Error fetching analytics:', err);
-        this.error = err.response?.data?.error_message || err.message || 'Failed to load analytics';
         const toast = useToast();
+        this.error = err.response?.data?.error_message || err.message || 'Failed to load analytics';
         toast.error('Failed to load analytics data');
       } finally {
         this.loading = false;
       }
-    },
-
-    createCharts() {
-      // Destroy existing charts
-      Object.values(this.charts).forEach(chart => {
-        if (chart) chart.destroy();
-      });
-
-      this.createUserRegistrationsChart();
-      this.createSubjectAttemptsChart();
-      this.createDifficultyScoresChart();
-      this.createMonthlyActivityChart();
-    },
-
-    createUserRegistrationsChart() {
-      if (!this.$refs.userRegistrationsChart || !this.analyticsData.user_registrations?.length) return;
-      
-      const ctx = this.$refs.userRegistrationsChart.getContext('2d');
-      
-      this.charts.userRegistrations = new Chart.Chart(ctx, {
-        type: 'line',
-        data: {
-          labels: this.analyticsData.user_registrations.map(item => {
-            const [year, month] = item.month.split('-');
-            return new Date(year, month - 1).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
-          }),
-          datasets: [{
-            label: 'New User Registrations',
-            data: this.analyticsData.user_registrations.map(item => item.count),
-            borderColor: 'rgba(54, 162, 235, 1)',
-            backgroundColor: 'rgba(54, 162, 235, 0.1)',
-            borderWidth: 3,
-            fill: true,
-            tension: 0.4
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            title: {
-              display: true,
-              text: 'User Registration Trend (Last 12 Months)',
-              font: { size: 16, weight: 'bold' },
-              color: '#ffffff'
-            },
-            legend: { 
-              display: false 
-            }
-          },
-          scales: {
-            y: {
-              beginAtZero: true,
-              ticks: { 
-                stepSize: 1,
-                color: '#ffffff' 
-              },
-              grid: {
-                color: 'rgba(255, 255, 255, 0.1)'
-              }
-            },
-            x: {
-              ticks: { color: '#ffffff' },
-              grid: {
-                color: 'rgba(255, 255, 255, 0.1)'
-              }
-            }
-          }
-        }
-      });
-    },
-
-    createSubjectAttemptsChart() {
-      if (!this.$refs.subjectAttemptsChart || !this.analyticsData.subject_attempts?.length) return;
-      
-      const ctx = this.$refs.subjectAttemptsChart.getContext('2d');
-      
-      const colors = [
-        'rgba(255, 99, 132, 0.8)',
-        'rgba(54, 162, 235, 0.8)',
-        'rgba(255, 205, 86, 0.8)',
-        'rgba(75, 192, 192, 0.8)',
-        'rgba(153, 102, 255, 0.8)',
-        'rgba(255, 159, 64, 0.8)'
-      ];
-      
-      this.charts.subjectAttempts = new Chart.Chart(ctx, {
-        type: 'doughnut',
-        data: {
-          labels: this.analyticsData.subject_attempts.map(item => item.subject),
-          datasets: [{
-            data: this.analyticsData.subject_attempts.map(item => item.attempts),
-            backgroundColor: colors.slice(0, this.analyticsData.subject_attempts.length),
-            borderWidth: 2,
-            borderColor: '#fff'
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            title: {
-              display: true,
-              text: 'Quiz Attempts by Subject',
-              font: { size: 16, weight: 'bold' },
-              color: '#ffffff'
-            },
-            legend: {
-              position: 'bottom',
-              labels: { 
-                padding: 20,
-                color: '#ffffff'
-              }
-            }
-          }
-        }
-      });
-    },
-
-    createDifficultyScoresChart() {
-      if (!this.$refs.difficultyScoresChart || !this.analyticsData.difficulty_scores?.length) return;
-      
-      const ctx = this.$refs.difficultyScoresChart.getContext('2d');
-      
-      const difficultyColors = {
-        'Easy': 'rgba(75, 192, 192, 0.8)',
-        'Medium': 'rgba(255, 205, 86, 0.8)',
-        'Hard': 'rgba(255, 99, 132, 0.8)'
-      };
-      
-      this.charts.difficultyScores = new Chart.Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels: this.analyticsData.difficulty_scores.map(item => item.difficulty),
-          datasets: [{
-            label: 'Average Score (%)',
-            data: this.analyticsData.difficulty_scores.map(item => item.avg_score),
-            backgroundColor: this.analyticsData.difficulty_scores.map(item => difficultyColors[item.difficulty] || 'rgba(153, 102, 255, 0.8)'),
-            borderColor: this.analyticsData.difficulty_scores.map(item => difficultyColors[item.difficulty]?.replace('0.8', '1') || 'rgba(153, 102, 255, 1)'),
-            borderWidth: 2
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            title: {
-              display: true,
-              text: 'Average Quiz Scores by Difficulty',
-              font: { size: 16, weight: 'bold' },
-              color: '#ffffff'
-            },
-            legend: { 
-              display: false 
-            }
-          },
-          scales: {
-            y: {
-              beginAtZero: true,
-              max: 100,
-              ticks: {
-                callback: function(value) {
-                  return value + '%';
-                },
-                color: '#ffffff'
-              },
-              grid: {
-                color: 'rgba(255, 255, 255, 0.1)'
-              }
-            },
-            x: {
-              ticks: { color: '#ffffff' },
-              grid: {
-                color: 'rgba(255, 255, 255, 0.1)'
-              }
-            }
-          }
-        }
-      });
-    },
-
-    createMonthlyActivityChart() {
-      if (!this.$refs.monthlyActivityChart || !this.analyticsData.monthly_activity?.length) return;
-      
-      const ctx = this.$refs.monthlyActivityChart.getContext('2d');
-      
-      this.charts.monthlyActivity = new Chart.Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels: this.analyticsData.monthly_activity.map(item => {
-            const [year, month] = item.month.split('-');
-            return new Date(year, month - 1).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
-          }),
-          datasets: [{
-            label: 'Total Attempts',
-            data: this.analyticsData.monthly_activity.map(item => item.total_attempts),
-            backgroundColor: 'rgba(54, 162, 235, 0.6)',
-            borderColor: 'rgba(54, 162, 235, 1)',
-            borderWidth: 2
-          }, {
-            label: 'Completed Attempts',
-            data: this.analyticsData.monthly_activity.map(item => item.completed_attempts),
-            backgroundColor: 'rgba(75, 192, 192, 0.6)',
-            borderColor: 'rgba(75, 192, 192, 1)',
-            borderWidth: 2
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            title: {
-              display: true,
-              text: 'Monthly Quiz Activity',
-              font: { size: 16, weight: 'bold' },
-              color: '#ffffff'
-            },
-            legend: {
-              position: 'top',
-              labels: { color: '#ffffff' }
-            }
-          },
-          scales: {
-            y: {
-              beginAtZero: true,
-              ticks: { 
-                stepSize: 1,
-                color: '#ffffff'
-              },
-              grid: {
-                color: 'rgba(255, 255, 255, 0.1)'
-              }
-            },
-            x: {
-              ticks: { color: '#ffffff' },
-              grid: {
-                color: 'rgba(255, 255, 255, 0.1)'
-              }
-            }
-          }
-        }
-      });
     }
   }
 };
@@ -583,11 +307,5 @@ export default {
 .chart-container {
   height: 300px;
   position: relative;
-}
-
-@media (max-width: 768px) {
-  .chart-container {
-    height: 250px;
-  }
 }
 </style>

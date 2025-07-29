@@ -10,81 +10,89 @@ class AdminAnalytics(Resource):
     @roles_accepted('admin')
     def get(self):
         try:
-            # Chart 1: User Registration Trend (Last 12 months)
-            end_date = datetime.now(ZoneInfo("Asia/Kolkata"))
-            start_date = end_date - timedelta(days=365)
+            # Chart 1: Total Attempts by User
+            user_attempts = []
+
+            all_users = User.query.filter(User.roles.any(name='user')).all()
+
+            for user in all_users:
+                attempts_count = user.quiz_attempts.filter(
+                    QuizAttempt.status.in_(['completed', 'auto_submitted'])
+                ).count()
+                user_attempts.append({
+                    "username": user.username,
+                    "attempts": attempts_count
+                })
             
-            # Get monthly user registrations
-            monthly_registrations = db.session.query(
-                func.strftime('%Y-%m', User.registration_date).label('month'),
-                func.count(User.id).label('count')
-            ).filter(
-                User.registration_date >= start_date,
-                User.roles.any(name='user')
-            ).group_by(func.strftime('%Y-%m', User.registration_date)).all()
-            
-            # Chart 2: Quiz Attempts by Subject
-            subject_attempts = db.session.query(
-                Subject.name.label('subject_name'),
-                func.count(QuizAttempt.id).label('attempts')
-            ).join(
-                Quiz, Subject.id == Quiz.chapter_id
-            ).join(
-                QuizAttempt, Quiz.id == QuizAttempt.quiz_id
-            ).filter(
-                Subject.deleted == False,
-                Quiz.deleted == False
-            ).group_by(Subject.name).all()
-            
+            # Sort by attempts in descending order
+            user_attempts.sort(key=lambda x: x['attempts'], reverse=True)
+
+
+            # Chart 2: Total Attempts by Subject
+
+            subject_attempts = []
+
+            all_subjects = Subject.query.filter(Subject.deleted == False).all()
+            all_attempts = QuizAttempt.query.filter(
+                QuizAttempt.status.in_(['completed', 'auto_submitted'])
+            ).all()
+            for subject in all_subjects:
+                attempts_count = 0
+                for attempt in all_attempts:
+                    if attempt.quiz.chapter.subject_id == subject.id:
+                        attempts_count += 1
+
+                subject_attempts.append({
+                    "subject": subject.name,
+                    "attempts": attempts_count
+                })
+            # Sort by attempts in descending order
+            subject_attempts.sort(key=lambda x: x['attempts'], reverse=True)
+
             # Chart 3: Average Quiz Scores by Difficulty
-            difficulty_scores = db.session.query(
-                Quiz.difficulty.label('difficulty'),
-                func.avg(QuizAttempt.user_score * 100.0 / QuizAttempt.total_marks).label('avg_percentage')
-            ).join(
-                QuizAttempt, Quiz.id == QuizAttempt.quiz_id
-            ).filter(
-                Quiz.deleted == False,
-                QuizAttempt.status.in_(['completed', 'auto_submitted']),
-                QuizAttempt.total_marks > 0
-            ).group_by(Quiz.difficulty).all()
-            
-            # Chart 4: Monthly Quiz Activity (Attempts vs Completions)
-            monthly_activity = db.session.query(
-                func.strftime('%Y-%m', QuizAttempt.started_at).label('month'),
-                func.count(QuizAttempt.id).label('total_attempts'),
-                func.sum(
-                    func.case(
-                        (QuizAttempt.status.in_(['completed', 'auto_submitted']), 1),
-                        else_=0
-                    )
-                ).label('completed_attempts')
-            ).filter(
-                QuizAttempt.started_at >= start_date
-            ).group_by(func.strftime('%Y-%m', QuizAttempt.started_at)).all()
+            e_score, m_score, h_score = 0, 0, 0
+            e_marks, m_marks, h_marks = 0, 0, 0
+            for attempt in all_attempts:
+                if attempt.quiz.difficulty.value == 'Easy':
+                    e_score += attempt.user_score
+                    e_marks += attempt.total_marks
+                elif attempt.quiz.difficulty.value == 'Medium':
+                    m_score += attempt.user_score
+                    m_marks += attempt.total_marks
+                elif attempt.quiz.difficulty.value == 'Hard':
+                    h_score += attempt.user_score
+                    h_marks += attempt.total_marks
+
+            difficulty_scores = [
+                {"difficulty": "Easy", "avg_score": round((e_score / e_marks) * 100, 2) if e_marks > 0 else 0},
+                {"difficulty": "Medium", "avg_score": round((m_score / m_marks) * 100, 2) if m_marks > 0 else 0},
+                {"difficulty": "Hard", "avg_score": round((h_score / h_marks) * 100, 2) if h_marks > 0 else 0}
+            ]
+
+            # Chart 4: Monthly Quiz Activity
+            attempts_by_month = {}
+            for attempt in all_attempts:
+                month = attempt.started_at.strftime('%Y-%m-%d')
+                if month not in attempts_by_month:
+                    attempts_by_month[month] = 1
+                else:
+                    attempts_by_month[month] += 1
+
+            monthly_activity = [
+                        {
+                            "month": attempt,
+                            "total_attempts": attempts_by_month[attempt]
+                        }
+                        for attempt in attempts_by_month
+                    ]
             
             return {
                 "code": 200,
                 "data": {
-                    "user_registrations": [
-                        {"month": reg.month, "count": reg.count}
-                        for reg in monthly_registrations
-                    ],
-                    "subject_attempts": [
-                        {"subject": attempt.subject_name, "attempts": attempt.attempts}
-                        for attempt in subject_attempts
-                    ],
-                    "difficulty_scores": [
-                        {"difficulty": score.difficulty.value, "avg_score": round(score.avg_percentage, 1)}
-                        for score in difficulty_scores if score.avg_percentage
-                    ],
-                    "monthly_activity": [
-                        {
-                            "month": activity.month,
-                            "total_attempts": activity.total_attempts,
-                            "completed_attempts": activity.completed_attempts
-                        }
-                        for activity in monthly_activity
-                    ]
+                    "user_attempts": user_attempts,
+                    "subject_attempts": subject_attempts,
+                    "difficulty_scores": difficulty_scores,
+                    "monthly_activity": monthly_activity
                 }
             }, 200
             
