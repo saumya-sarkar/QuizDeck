@@ -1,7 +1,9 @@
-from flask_security import auth_required, current_user
+from flask_security import auth_required
 from flask_restful import Resource, reqparse
-from models import db, QuizAttempt, ist_format
+from models import QuizAttempt, ist_format
 from sqlalchemy import desc
+from caching import cache
+from datetime import timedelta
 
 
 user_quiz_attempt_fields = reqparse.RequestParser()
@@ -13,7 +15,18 @@ class UserQuizAttempts(Resource):
 
         args = user_quiz_attempt_fields.parse_args()
         user_id = args.get('user_id')
+
+        cache_key = f"user_quiz_attempts_{user_id}" # Cache key for user attempts
+
+        # Check if cached data exists
+        cached_attempts = cache.get(cache_key)
+        if cached_attempts:
+            print(f"Cache hit for user {user_id}")
+            return cached_attempts, 200
+        else:
+            print(f"Cache miss for user {user_id}")
         
+        # If no cache, fetch from database
         # Fetch all attempts for the current user, ordered by most recent first
         attempts = QuizAttempt.query.filter_by(
             user_id=user_id
@@ -51,10 +64,17 @@ class UserQuizAttempts(Resource):
                 "status": attempt.status,
                 "total_questions": quiz.get_total_questions()
             })
-        
-        return {
+
+        # Cache the result
+        response_data = {
             "code": 200,
             "message": "Quiz attempts retrieved successfully",
             "attempts": attempts_data,
             "total_attempts": len(attempts_data)
-        }, 200
+        }
+        cache_timeout = int(timedelta(days=7).total_seconds())  # Cache for 7 days
+        # Store in cache
+        cache.set(cache_key, response_data, timeout=cache_timeout)
+        print(f"Cache set for user {user_id} with timeout {cache_timeout} seconds")
+
+        return response_data, 200

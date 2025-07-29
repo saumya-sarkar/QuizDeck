@@ -4,6 +4,16 @@ from models import db, Quiz, Question, Option, QuizAttempt, UserAnswer, ist_now,
 from operator import itemgetter
 
 
+from caching import cache
+
+def invalidate_user_attempts_cache(user_id):
+    cache_key = f"user_quiz_attempts_{user_id}"
+    if cache.get(cache_key):
+        # Invalidate cache for this user
+        cache.delete(cache_key)
+    print(f"Cache invalidated for user {user_id}")
+
+
 quiz_start_parser = reqparse.RequestParser()
 quiz_start_parser.add_argument('quiz_id', type=int, required=True, location='json')
 
@@ -75,7 +85,10 @@ class StartQuiz(Resource):
         
         db.session.add(attempt)
         db.session.commit()
-        
+
+        # Invalidate cache for user attempts
+        invalidate_user_attempts_cache(current_user.id)
+
         return {
             "code": 201,
             "message": "Quiz started successfully",
@@ -258,6 +271,9 @@ class SubmitQuiz(Resource):
         attempt.status = 'auto_submitted' if is_auto_submit else 'completed'
         
         db.session.commit()
+
+        # Invalidate cache for user attempts
+        invalidate_user_attempts_cache(current_user.id)
         
         return {
             "code": 200,
