@@ -198,7 +198,7 @@ def unlock_quiz_task(quiz_id):
     if quiz.quiz_type.value == "Practice":
         return "Practice quizzes do not require unlocking."
     
-    if quiz and quiz.is_locked and not quiz.is_unlocked_by_celery:
+    if quiz and quiz.is_locked:
         quiz.is_locked = False
         quiz.is_unlocked_by_celery = True
         db.session.commit()
@@ -206,3 +206,25 @@ def unlock_quiz_task(quiz_id):
     else:
         print(f"Quiz with ID {quiz_id} is either not found or already unlocked.")
     return f"Quiz unlock task completed."
+
+
+# Automatic Quiz Locking Task
+@shared_task(ignore_results = False, name = "lock_quiz_task")
+def lock_quiz_task(quiz_id):
+    quiz = Quiz.query.filter_by(id=quiz_id).first()
+   
+    if not quiz:
+        print(f"Quiz with ID {quiz_id} not found.")
+        return "Quiz not found."
+
+    if quiz.quiz_type.value == "Practice":
+        return "Practice quizzes do not require locking."
+
+    if quiz and not quiz.is_locked:
+        quiz.is_locked = True
+        quiz.is_locked_by_celery = True
+        db.session.commit()
+        print(f"Quiz {quiz.name} with ID {quiz.id} has been locked by Celery task.")
+    else:
+        print(f"Quiz with ID {quiz_id} is either not found or already locked.")
+    return f"Quiz lock task completed."

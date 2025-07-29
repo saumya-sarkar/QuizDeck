@@ -4,7 +4,7 @@ from models import db, Chapter, Quiz, Question, ist_format, ist_now
 from datetime import timedelta, datetime
 from zoneinfo import ZoneInfo
 from dateutil import parser
-from tasks import unlock_quiz_task
+from tasks import unlock_quiz_task, lock_quiz_task
 
 
 
@@ -139,7 +139,7 @@ class UpdateQuiz(Resource):
     def post(self):
         args = quiz_create_fields.parse_args()
         name = args.get('name')
-        duration_mins = args.get('duration_mins')
+        duration_mins = args.get('duration_mins', 60)
         difficulty = args.get('difficulty')
         quiz_type = args.get('quiz_type')
         chapter_id = args.get('chapter_id')
@@ -194,12 +194,15 @@ class UpdateQuiz(Resource):
             else:
                 start_time = parser.parse(start_time).astimezone(ZoneInfo("Asia/Kolkata"))
                 end_time = parser.parse(end_time).astimezone(ZoneInfo("Asia/Kolkata"))
+                min_end_time = start_time + timedelta(minutes=duration_mins)
                 if start_time < datetime.now(ZoneInfo("Asia/Kolkata")):
                     return {"code": 400, "error_message": "Start time cannot be in the past"}, 400
                 elif end_time < datetime.now(ZoneInfo("Asia/Kolkata")):
                     return {"code": 400, "error_message": "End time cannot be in the past"}, 400
                 elif end_time <= start_time:
                     return {"code": 400, "error_message": "End time cannot be before start time"}, 400
+                elif end_time < min_end_time:
+                    return {"code": 400, "error_message": f"End time must be at least {duration_mins} minutes after start time"}, 400
                 else:
                     if datetime.now(ZoneInfo("Asia/Kolkata")) < start_time or datetime.now(ZoneInfo("Asia/Kolkata")) > end_time:
                         is_locked = True
@@ -223,6 +226,11 @@ class UpdateQuiz(Resource):
             start_time = quiz.start_time.astimezone(ZoneInfo("Asia/Kolkata"))
             unlock_quiz_task.apply_async((quiz.id,), eta=start_time)
             print(f"Unlock task scheduled for quiz {quiz.name} with ID {quiz.id} at {start_time}")
+
+        if quiz.end_time:
+            end_time = quiz.end_time.astimezone(ZoneInfo("Asia/Kolkata"))
+            lock_quiz_task.apply_async((quiz.id,), eta=end_time)
+            print(f"Lock task scheduled for quiz {quiz.name} with ID {quiz.id} at {end_time}")
 
         return {
                 "id": quiz.id,
@@ -269,9 +277,11 @@ class UpdateQuiz(Resource):
             return {"code": 409, "error_message": "Quiz with this name already exists"}, 409
         if Chapter.query.filter_by(id=chapter_id, deleted=False).first() is None:
             return {"code": 404, "error_message": "Chapter not found for the given chapter_id"}, 404
-        
+
         if duration_mins and duration_mins <= 0:
             return {"code": 400, "error_message": "Invalid duration. Must be a positive integer"}, 400
+        
+        duration_mins = duration_mins if duration_mins else quiz.duration_mins
         
         if difficulty not in ["Easy", "Medium", "Hard"]:
             return {"code": 400, "error_message": "Invalid difficulty. Must be one of: Easy, Medium, Hard"}, 400
@@ -291,7 +301,7 @@ class UpdateQuiz(Resource):
                     return {"code": 400, "error_message": "Start time cannot be in the past"}, 400
                 else:
                     end_time = None  # End time is not used for Exam type quiz
-                    duration_mins = duration_mins if duration_mins else 60
+                    duration_mins = duration_mins if duration_mins else quiz.duration_mins
                     end_time = start_time + timedelta(minutes=duration_mins)
 
                     if datetime.now(ZoneInfo("Asia/Kolkata")) < start_time or datetime.now(ZoneInfo("Asia/Kolkata")) > end_time:
@@ -306,12 +316,15 @@ class UpdateQuiz(Resource):
             else:
                 start_time = parser.parse(start_time).astimezone(ZoneInfo("Asia/Kolkata"))
                 end_time = parser.parse(end_time).astimezone(ZoneInfo("Asia/Kolkata"))
+                min_end_time = start_time + timedelta(minutes=duration_mins)
                 if start_time < datetime.now(ZoneInfo("Asia/Kolkata")):
                     return {"code": 400, "error_message": "Start time cannot be in the past"}, 400
                 elif end_time < datetime.now(ZoneInfo("Asia/Kolkata")):
                     return {"code": 400, "error_message": "End time cannot be in the past"}, 400
                 elif end_time <= start_time:
                     return {"code": 400, "error_message": "End time cannot be before start time"}, 400
+                elif end_time < min_end_time:
+                    return {"code": 400, "error_message": f"End time must be at least {duration_mins} minutes after start time"}, 400
                 else:
                     if datetime.now(ZoneInfo("Asia/Kolkata")) < start_time or datetime.now(ZoneInfo("Asia/Kolkata")) > end_time:
                         is_locked = True
@@ -337,6 +350,11 @@ class UpdateQuiz(Resource):
             start_time = quiz.start_time.astimezone(ZoneInfo("Asia/Kolkata"))
             unlock_quiz_task.apply_async((quiz.id,), eta=start_time)
             print(f"Unlock task scheduled for quiz {quiz.name} with ID {quiz.id} at {start_time}")
+        
+        if quiz.end_time:
+            end_time = quiz.end_time.astimezone(ZoneInfo("Asia/Kolkata"))
+            lock_quiz_task.apply_async((quiz.id,), eta=end_time)
+            print(f"Lock task scheduled for quiz {quiz.name} with ID {quiz.id} at {end_time}")
         
         return {
                 "id": quiz.id,

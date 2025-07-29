@@ -45,8 +45,8 @@ with app.app_context():
     # Example of dropping a table (uncomment if needed)
     
     # # Define the table name you want to drop
-    # table_name = 'user'
-    # column_name = 'is_unlocked_by_celery'
+    # table_name = 'quiz'
+    # column_name = 'is_locked_by_celery'
 
     # # Create a SQL DROP TABLE statement
     # drop_table = text(f"DROP TABLE IF EXISTS {table_name};")
@@ -57,7 +57,7 @@ with app.app_context():
     # # Execute the SQL statement
     # with db.engine.connect() as connection:
     #     connection.execute(sql_statement)
-        # connection.execute(drop_table)
+    #     connection.execute(drop_table)
 print("Database initialized and roles created.")
 
 
