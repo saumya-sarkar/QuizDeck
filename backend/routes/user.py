@@ -59,7 +59,7 @@ class UserLogin(Resource):
         email_username = data.get('email_username')
         password = data.get('password')
 
-        sleep(3) # Simulate a delay
+        sleep(1) # Simulate a delay
         
         if not email_username:
             return {"error": "Email or username is required"}, 400

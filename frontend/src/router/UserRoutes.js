@@ -1,4 +1,3 @@
-import store from "@/store";
 import UserDashboard from "../views/User/UserDashboard.vue";
 import UserQuizAttempts from "../views/User/UserQuizAttempts.vue";
 import UserSubjects from "../views/User/UserSubjects.vue";

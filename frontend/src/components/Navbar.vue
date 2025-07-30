@@ -4,8 +4,8 @@
       <router-link to="/" class="navbar-brand fw-bold fs-3">QuizDeck</router-link>
       
       <!-- Navigation items -->
-      <div class="navbar-collapse">
-        <ul class="navbar-nav ms-auto">
+      <div class="navbar-collapse" v-if="!isLoggedIn && !isAdmin">
+        <ul class="navbar-nav ms-auto" >
           <li class="nav-item">
             <router-link to="/" class="nav-link">Home</router-link>
           </li>
@@ -17,13 +17,80 @@
           </li>
         </ul>
       </div>
+      <div class="navbar-collapse" v-if="isLoggedIn && isAdmin">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item">
+            <router-link to="/admin" class="nav-link">Dashboard</router-link>
+          </li>
+          <li class="nav-item">
+            <router-link to="/admin/subjects" class="nav-link">Quizzes</router-link>
+          </li>
+          <li class="nav-item">
+            <router-link to="/admin/users" class="nav-link">Users</router-link>
+          </li>
+          <li class="nav-item">
+            <router-link to="/admin/analytics" class="nav-link">Summary Charts</router-link>
+          </li>
+          <li class="nav-item">
+            <router-link to="/" @click="handleLogout" class="nav-link">Sign Out</router-link>
+          </li>
+        </ul>
+      </div>
+      <div class="navbar-collapse" v-if="isLoggedIn && !isAdmin">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item">
+            <router-link :to="{ name: 'UserDashboard', params: { userId: user_id } }" class="nav-link">Dashboard</router-link>
+          </li>
+          <li class="nav-item">
+            <router-link :to="{ name: 'UserSubjects', params: { userId: user_id } }" class="nav-link">Quizzes</router-link>
+          </li>
+          <li class="nav-item">
+            <router-link :to="{ name: 'UserQuizAttempts', params: { userId: user_id } }" class="nav-link">Quiz Attempts</router-link>
+          </li>
+          <li class="nav-item">
+            <router-link :to="{ name: 'UserAnalytics', params: { userId: user_id } }" class="nav-link">Summary Charts</router-link>
+          </li>
+          <li class="nav-item">
+            <router-link to="/" @click="handleLogout" class="nav-link">Sign Out</router-link>
+          </li>
+        </ul>
+      </div>
     </div>
   </nav>
 </template>
 
 <script>
+import store from '@/store';
+
+
 export default {
-  name: 'Navbar'
+  name: 'Navbar',
+  data() {
+    return {
+      isLoggedIn: false,
+      isAdmin: false,
+      user_id: null
+    }
+  },
+
+  created() {
+    // Check if user is logged in and set the state accordingly
+    this.isLoggedIn = store.getters['auth/isAuthenticated'];
+    this.isAdmin = store.getters['auth/isAdmin'];
+  },
+  mounted() {
+    if (this.isLoggedIn) {
+      this.user_id = store.getters['auth/getUser'].id;
+    }
+  },
+
+  methods: {
+    handleLogout() {
+      this.isLoggedIn = false;
+      this.isAdmin = false;
+      sessionStorage.removeItem("access_token");
+    }
+  }
 }
 </script>
 
