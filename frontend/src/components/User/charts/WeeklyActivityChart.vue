@@ -32,7 +32,7 @@ export default {
         plugins: {
           title: {
             display: true,
-            text: 'Weekly Quiz Activity (Last 8 Weeks)',
+            text: 'Weekly Quiz Activity (Last 4 Weeks)',
             font: { size: 16, weight: 'bold' },
             color: '#ffffff'
           },
@@ -50,19 +50,22 @@ export default {
             position: 'left',
             beginAtZero: true,
             title: {
-              display: true,
+              display: false,
               text: 'Quiz Attempts',
               color: '#ffffff'
             },
             ticks: { color: '#ffffff' },
-            grid: { color: 'rgba(255,255,255,0.1)' }
+            grid: {
+              display: false, 
+              color: 'rgba(255,255,255,0.1)' 
+            }
           },
           y1: {
             position: 'right',
             beginAtZero: true,
             max: 100,
             title: {
-              display: true,
+              display: false,
               text: 'Average Score (%)',
               color: '#ffffff'
             },
@@ -84,7 +87,7 @@ export default {
       handler(newVal) {
         if (!newVal || newVal.length === 0) return;
 
-        const weeks = newVal.map(item => `Week ${item.week.split('-Week')[1]}`);
+        const weeks = newVal.map(item => `Week ${item.week.split(' Week-')[1]}`);
         const attempts = newVal.map(item => item.attempts);
         const avgScores = newVal.map(item => item.avg_score);
 
@@ -102,7 +105,7 @@ export default {
               yAxisID: 'y'
             },
             {
-              label: 'Average Score (%)',
+              label: 'Average Score Percentage',
               data: avgScores,
               borderColor: 'rgba(255, 99, 132, 1)',
               backgroundColor: 'rgba(255, 99, 132, 0.1)',

@@ -128,15 +128,30 @@ class UserAnalytics(Resource):
                     "attempts": attempts if attempts > 0 else 0
                 })
             
-            # Chart 2: Weekly Quiz Activity (Last 8 weeks)
-            weekly_activity = db.session.query(
-                func.strftime('%Y-Week%W', QuizAttempt.started_at).label('week'),
-                func.count(QuizAttempt.id).label('attempts'),
-                func.avg(QuizAttempt.user_score * 100.0 / QuizAttempt.total_marks).label('avg_score')
-            ).filter(
-                QuizAttempt.user_id == user_id,
-                QuizAttempt.status.in_(['completed', 'auto_submitted'])
-            ).group_by(func.strftime('%Y-Week%W', QuizAttempt.started_at)).all()
+            # Chart 2: Weekly Quiz Activity (Last 4 weeks)
+            activity_dict = {}
+            cur_week = datetime.now(ZoneInfo("Asia/Kolkata"))
+            for i in range(4):
+                activity_dict[(cur_week-timedelta(weeks=i)).strftime("%Y Week-%W")] = {"attempts": 0, "user_score": 0, "total_marks": 0}
+            for attempt in userAttempts:
+                week = attempt.started_at.strftime("%Y Week-%W")
+                if week in activity_dict:
+                    activity_dict[week]["attempts"] += 1
+                    if attempt.total_marks > 0:
+                        activity_dict[week]["user_score"] += attempt.user_score
+                        activity_dict[week]["total_marks"] += attempt.total_marks
+            
+            weekly_activity = []
+            for week, data in activity_dict.items():
+                avg_score = (data["user_score"] / data["total_marks"] * 100) if data["total_marks"] > 0 else 0
+                weekly_activity.append({
+                    "week": week,
+                    "attempts": data["attempts"],
+                    "avg_score": round(avg_score, 2) if avg_score else 0
+                })
+            
+            # Sort by week in descending order
+            weekly_activity.reverse()
             
             # # Chart 3: Score Distribution
             score_dict = {
@@ -186,14 +201,7 @@ class UserAnalytics(Resource):
                 "code": 200,
                 "data": {
                     "subject_performance": subject_performance,
-                    "weekly_activity": [
-                        {
-                            "week": activity.week,
-                            "attempts": activity.attempts,
-                            "avg_score": round(activity.avg_score, 1) if activity.avg_score else 0
-                        }
-                        for activity in weekly_activity
-                    ],
+                    "weekly_activity": weekly_activity,
                     "score_distribution": score_distribution,
                     "recent_trends": recent_trends
                 }

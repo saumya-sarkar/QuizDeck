@@ -30,7 +30,7 @@ export default {
         labels,
         datasets: [
           {
-            label: 'Attempts',
+            label: 'Quiz Attempts',
             data: attempts,
             backgroundColor: 'rgba(255, 99, 132, 0.6)',
             borderColor: 'rgba(255, 99, 132, 1)',
@@ -38,7 +38,7 @@ export default {
             yAxisID: 'y'
           },
           {
-            label: 'Average Percentage',
+            label: 'Average Score Percentage',
             data: avgPercentages,
             backgroundColor: 'rgba(54, 162, 235, 0.6)',
             borderColor: 'rgba(54, 162, 235, 1)',

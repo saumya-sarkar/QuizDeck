@@ -81,7 +81,26 @@ class Subject(db.Model):
     
     #relationships
     chapters = db.relationship('Chapter', back_populates='subject', lazy='dynamic', cascade='all, delete-orphan')
+
+    def total_chapters(self):
+        return self.chapters.filter_by(deleted=False).count() if self.chapters else 0
     
+    def total_quizzes(self):
+        total_quizzes = 0
+        for chapter in self.chapters:
+            if not chapter.deleted:
+                total_quizzes += chapter.quizzes.filter_by(deleted=False).count()
+        return total_quizzes
+
+    def total_users(self):
+        total_users = set()
+        for chapter in self.chapters:
+            if not chapter.deleted:
+                for quiz in chapter.quizzes:
+                    if not quiz.deleted:
+                        for attempt in quiz.quiz_attempts:
+                            total_users.add(attempt.user_id)
+        return len(total_users)  
 
 class Chapter(db.Model):
     __tablename__ = 'chapter'

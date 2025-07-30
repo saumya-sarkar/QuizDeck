@@ -60,7 +60,10 @@ class GetAllSubs(Resource):
                 "totalQuizzes": 0,
                 "badge": 'New',
                 "created_at": ist_format(subject.created_at),
-                "updated_at": ist_format(subject.updated_at) if subject.updated_at else None
+                "updated_at": ist_format(subject.updated_at) if subject.updated_at else None,
+                "totalChapters": subject.total_chapters(),
+                "totalQuizzes": subject.total_quizzes(),
+                "totalUsers": subject.total_users()
             }
             for subject in all_subjects
         ], 200
@@ -131,7 +134,10 @@ class UpdateSub(Resource):
             "totalQuizzes": 0,
             "badge": 'New',
             "created_at": ist_format(subject.created_at),
-            "updated_at": ist_format(subject.updated_at) if subject.updated_at else None
+            "updated_at": ist_format(subject.updated_at) if subject.updated_at else None,
+            "totalChapters": subject.total_chapters(),
+            "totalQuizzes": subject.total_quizzes(),
+            "totalUsers": subject.total_users()
         }, 201
 
     @auth_required('token')
@@ -168,7 +174,10 @@ class UpdateSub(Resource):
             "description": subject.description,
             "cover_url": subject.cover_url,
             "created_at": ist_format(subject.created_at),
-            "updated_at": ist_format(subject.updated_at) if subject.updated_at else None
+            "updated_at": ist_format(subject.updated_at) if subject.updated_at else None,
+            "totalChapters": subject.total_chapters(),
+            "totalQuizzes": subject.total_quizzes(),
+            "totalUsers": subject.total_users()
         }, 200
 
     
