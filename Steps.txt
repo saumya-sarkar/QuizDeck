@@ -1,0 +1,39 @@
+1. download zip in to Level1_Viva and 'Extract Here'
+
+2. in powershell -> ./.cenv/Scripts/activate
+
+3. run checksum -> python check.py
+
+4. in powershell -> deactivate
+
+5. open ubuntu terminal and run copyquizdeck then verify
+
+6. open quiz_deck in VS code
+
+7. create two terminals
+
+8. 2nd terminal -> cd backend and then remove dump.rdb (version problem)  -- rm -rf dump.rdb
+
+9. in backend -> makeenv
+
+10. startenv
+
+11. installpackages
+
+12. 1st terminal -> cd frontend and then npm install
+
+13. make 4 more terminals
+
+14. cd backend and startredis (if doesnt work use stopredis/or use redis-cli -> 'shutdown')    --Terminal 6
+
+15. cd backend -> startmailhog    --Terminal 5  -- http://localhost:8025
+
+16. cd backend -> celeryworker    --Terminal 3
+
+17. cd backend -> celerybeat      --Terminal 4
+
+18. rename terminals
+
+
+
+
