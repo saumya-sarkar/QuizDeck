@@ -235,7 +235,7 @@ QuizDeck was built by **Saumya Sarkar** (IIT Madras, BS in Data Science and Appl
 
 ## License
 
-Copyright (c) 2026 Saumya Sarkar
+Copyright (c) 2025 Saumya Sarkar
 
 All rights reserved.
 
