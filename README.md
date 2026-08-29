@@ -232,3 +232,11 @@ QuizDeck was built by **Saumya Sarkar** (IIT Madras, BS in Data Science and Appl
 
 - 📄 Full project report (approach, DB schema/ER diagram, API design rationale): [QuizDeck_Report.pdf](https://drive.google.com/file/d/1ZEYat4Yavi0gmjxu7GNc26LKoBj8pb6d/view?usp=drive_link)
 - 📹 Demo video: [QuizDeck Demo Video.mp4](https://drive.google.com/file/d/1LdXRJwR3bZ8Og86vCuTwC-rsihx-DP57/view?usp=drive_link) *(download it for the best viewing experience)*
+
+## License
+
+Copyright (c) 2026 Saumya Sarkar
+
+All rights reserved.
+
+This project is not licensed for use, modification, distribution, or commercial use without explicit permission from the copyright holder.
